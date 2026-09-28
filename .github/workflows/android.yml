@@ -58,13 +58,21 @@ jobs:
           test -n "$PODIUM_AIR_KEYSTORE_PASSWORD"
           test -n "$PODIUM_AIR_KEY_ALIAS"
           test -n "$PODIUM_AIR_KEY_PASSWORD"
-          printf '%s' "$PODIUM_AIR_KEYSTORE_BASE64" | base64 -d > podium-air-release.jks
+          # Accept either the value alone or a copied NAME=VALUE line, including
+          # whitespace inserted by a phone's text viewer when selecting it.
+          keystore_base64="${PODIUM_AIR_KEYSTORE_BASE64#PODIUM_AIR_KEYSTORE_BASE64=}"
+          echo "Encoded signing key length: ${#keystore_base64} characters"
+          printf '%s' "$keystore_base64" | tr -d '[:space:]' | base64 -d > podium-air-release.jks
+          test "$(sha256sum podium-air-release.jks | cut -d ' ' -f 1)" = '0c2d187c0d8e441cac891ecc69ee18a9f69676e1651d172a3db3c307380b6bcf' || { echo 'Signing key contents do not match the Podium Air release key'; exit 1; }
           chmod 600 podium-air-release.jks
+          store_password="${PODIUM_AIR_KEYSTORE_PASSWORD#PODIUM_AIR_KEYSTORE_PASSWORD=}"
+          key_alias="${PODIUM_AIR_KEY_ALIAS#PODIUM_AIR_KEY_ALIAS=}"
+          key_password="${PODIUM_AIR_KEY_PASSWORD#PODIUM_AIR_KEY_PASSWORD=}"
           {
             echo 'storeFile=podium-air-release.jks'
-            printf 'storePassword=%s\n' "$PODIUM_AIR_KEYSTORE_PASSWORD"
-            printf 'keyAlias=%s\n' "$PODIUM_AIR_KEY_ALIAS"
-            printf 'keyPassword=%s\n' "$PODIUM_AIR_KEY_PASSWORD"
+            printf 'storePassword=%s\n' "$store_password"
+            printf 'keyAlias=%s\n' "$key_alias"
+            printf 'keyPassword=%s\n' "$key_password"
           } > keystore.properties
           chmod 600 keystore.properties
           chmod +x gradlew
