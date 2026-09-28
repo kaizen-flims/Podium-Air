@@ -1372,11 +1372,6 @@ fun SettingsScreen(
                 withLink(LinkAnnotation.Url("https://github.com/kaizen-flims/Podium-Air/blob/main/LICENSE", linkStyles)) {
                     append("GPLv3")
                 }
-                append("\nBased on ")
-                withLink(LinkAnnotation.Url("https://github.com/kushagrasinghx/BitChord", linkStyles)) {
-                    append("BitChord")
-                }
-                append(" by Kushagra Singh and contributors")
             },
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

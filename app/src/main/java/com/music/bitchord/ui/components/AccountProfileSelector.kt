@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -110,6 +111,15 @@ fun AccountProfileSelector(
                 item { SelectorAction(Icons.Rounded.Add, stringResource(R.string.add_account), onAddAccount) }
                 item { SelectorAction(Icons.Rounded.ManageAccounts, stringResource(R.string.manage_accounts)) { managing = !managing } }
                 item { SelectorAction(Icons.Rounded.Settings, stringResource(R.string.settings), onOpenSettings) }
+                item {
+                    Text(
+                        text = stringResource(R.string.made_with_love_by_prem),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 14.dp),
+                    )
+                }
             }
         }
     }
