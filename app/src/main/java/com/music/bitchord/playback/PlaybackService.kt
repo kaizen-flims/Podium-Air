@@ -157,29 +157,29 @@ import java.util.Locale
 const val BACK_RESTARTS_AFTER_MS = 10_000L
 
 /** Session command used by both the player UI and the media notification. */
-const val ACTION_TOGGLE_AUTOPLAY = "com.music.bitchord.action.TOGGLE_AUTOPLAY"
+const val ACTION_TOGGLE_AUTOPLAY = "com.podium.air.action.TOGGLE_AUTOPLAY"
 
 /** Session command used to smoothly swap the current track's version (film vs release). */
-const val ACTION_SWAP_VERSION = "com.music.bitchord.action.SWAP_VERSION"
+const val ACTION_SWAP_VERSION = "com.podium.air.action.SWAP_VERSION"
 const val EXTRA_SWAP_MEDIA_ITEM = "bitchord.swap.media_item"
 
 /** Session command used by the media notification's and the 4×1 widget's Favorite button. */
-const val ACTION_TOGGLE_FAVORITE = "com.music.bitchord.action.TOGGLE_FAVORITE"
+const val ACTION_TOGGLE_FAVORITE = "com.podium.air.action.TOGGLE_FAVORITE"
 
 /** Session command used by the media notification's and the 4×1 widget's Shuffle button. */
-const val ACTION_TOGGLE_SHUFFLE = "com.music.bitchord.action.TOGGLE_SHUFFLE"
+const val ACTION_TOGGLE_SHUFFLE = "com.podium.air.action.TOGGLE_SHUFFLE"
 
 /** Session actions exposed to Android Auto for the track that is playing. */
-const val ACTION_START_STATION = "com.music.bitchord.action.START_STATION"
-const val ACTION_REVERT_TO_ORIGINAL = "com.music.bitchord.action.REVERT_TO_ORIGINAL"
-const val ACTION_SWAP_TO_VERSION = "com.music.bitchord.action.SWAP_TO_VERSION"
+const val ACTION_START_STATION = "com.podium.air.action.START_STATION"
+const val ACTION_REVERT_TO_ORIGINAL = "com.podium.air.action.REVERT_TO_ORIGINAL"
+const val ACTION_SWAP_TO_VERSION = "com.podium.air.action.SWAP_TO_VERSION"
 
 /** Session commands bracketing an explicit radio queue replacement. */
-const val ACTION_BEGIN_RADIO_QUEUE = "com.music.bitchord.action.BEGIN_RADIO_QUEUE"
-const val ACTION_COMMIT_RADIO_QUEUE = "com.music.bitchord.action.COMMIT_RADIO_QUEUE"
+const val ACTION_BEGIN_RADIO_QUEUE = "com.podium.air.action.BEGIN_RADIO_QUEUE"
+const val ACTION_COMMIT_RADIO_QUEUE = "com.podium.air.action.COMMIT_RADIO_QUEUE"
 
 /** Session command behind the player menu's "Upgrade quality". */
-const val ACTION_UPGRADE_QUALITY = "com.music.bitchord.action.UPGRADE_QUALITY"
+const val ACTION_UPGRADE_QUALITY = "com.podium.air.action.UPGRADE_QUALITY"
 
 /**
  * App-side gate for explicit quality retries.
@@ -211,7 +211,7 @@ internal class ManualUpgradeThrottle(private val cooldownMs: Long) {
  * can see have had their playback URIs stripped on the way out to it. The
  * permutation travels instead, and the session applies it to the items it holds.
  */
-const val ACTION_REORDER_QUEUE = "com.music.bitchord.action.REORDER_QUEUE"
+const val ACTION_REORDER_QUEUE = "com.podium.air.action.REORDER_QUEUE"
 
 /** Where the rearrangement starts, and where each slot's new occupant stands now. */
 const val EXTRA_REORDER_FROM = "bitchord.reorder.from"
@@ -224,7 +224,7 @@ const val EXTRA_REORDER_ORDER = "bitchord.reorder.order"
  * party publish those moves would otherwise trigger one at a time, so a jam
  * hears about the reorder once, when the row is dropped, not mid-drag.
  */
-const val ACTION_QUEUE_DRAG = "com.music.bitchord.action.QUEUE_DRAG"
+const val ACTION_QUEUE_DRAG = "com.podium.air.action.QUEUE_DRAG"
 const val EXTRA_QUEUE_DRAG_ACTIVE = "bitchord.queueDrag.active"
 
 /** A full first page for an explicitly requested station. */
@@ -1171,7 +1171,7 @@ class PlaybackService : MediaLibraryService() {
                 .setChannelId(CHANNEL_ID)
                 .setChannelName(R.string.playback_channel_name)
                 .build()
-                .apply { setSmallIcon(R.drawable.ic_notification_logo) },
+                .apply { setSmallIcon(R.drawable.ic_podium_air_mono) },
         )
 
         // Both the player screen and notification route their Shuffle command

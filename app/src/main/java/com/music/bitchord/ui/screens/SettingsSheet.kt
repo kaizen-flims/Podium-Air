@@ -526,7 +526,7 @@ fun SettingsScreen(
                     title = exportDownloadsTitle,
                     checked = exportDownloads,
                     onCheckedChange = AppSettings::setExportDownloads,
-                    subtitle = "Music/BitChord".takeIf { exportDownloads },
+                    subtitle = "Music/Podium Air".takeIf { exportDownloads },
                 )
             }
         }
@@ -1358,29 +1358,25 @@ fun SettingsScreen(
         if (searchQuery.isBlank()) {
         Text(
             text = buildAnnotatedString {
-                append("bitchord $version  ")
+                append("Podium Air $version  ")
                 val linkStyles = TextLinkStyles(
                     style = SpanStyle(
                         color = MaterialTheme.colorScheme.primary,
                         textDecoration = TextDecoration.Underline,
                     ),
                 )
+                withLink(LinkAnnotation.Url("https://github.com/kaizen-flims/Podium-Air", linkStyles)) {
+                    append("Source")
+                }
+                append("  ")
+                withLink(LinkAnnotation.Url("https://github.com/kaizen-flims/Podium-Air/blob/main/LICENSE", linkStyles)) {
+                    append("GPLv3")
+                }
+                append("\nBased on ")
                 withLink(LinkAnnotation.Url("https://github.com/kushagrasinghx/BitChord", linkStyles)) {
-                    append("GitHub")
+                    append("BitChord")
                 }
-                append("  ")
-                withLink(LinkAnnotation.Url("https://github.com/kushagrasinghx", linkStyles)) {
-                    append("Developer")
-                }
-                append("  ")
-                withLink(LinkAnnotation.Url("https://discord.gg/pDdKfrdHY6", linkStyles)) {
-                    append("Discord")
-                }
-                append("  ")
-                withLink(LinkAnnotation.Url("https://bitchord.kushagrasingh.in/", linkStyles)) {
-                    append("Website")
-                }
-                append("\n~YouTube Music & Listen Together Backend")
+                append(" by Kushagra Singh and contributors")
             },
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1388,6 +1384,13 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 24.dp, bottom = 8.dp),
+        )
+        Text(
+            text = stringResource(R.string.made_with_love_by_prem),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
         )
         }
     }

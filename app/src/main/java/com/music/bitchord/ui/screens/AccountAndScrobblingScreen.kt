@@ -76,6 +76,17 @@ fun AccountAndScrobblingScreen(
 
         AccountCard(signedIn = signedIn, account = account, onSignIn = onSignIn, onClick = onSwitchChannel)
 
+        if (!signedIn) {
+            Text(
+                text = stringResource(R.string.made_with_love_by_prem),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+            )
+        }
+
         if (signedIn) {
             SettingsGroup(
                 footer = stringResource(R.string.account_profiles_help),

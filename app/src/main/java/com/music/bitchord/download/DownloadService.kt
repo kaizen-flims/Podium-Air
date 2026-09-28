@@ -217,7 +217,7 @@ class DownloadService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification_logo)
+            .setSmallIcon(R.drawable.ic_podium_air_mono)
             .setContentTitle(title)
             .setContentText(text)
             // Indeterminate until something has a length to measure against.
@@ -253,7 +253,7 @@ class DownloadService : Service() {
         /** Distinct from playback's, which Media3 owns. */
         const val NOTIFICATION_ID = 0x8175
 
-        const val ACTION_CANCEL_ALL = "com.music.bitchord.download.CANCEL_ALL"
+        const val ACTION_CANCEL_ALL = "com.podium.air.download.CANCEL_ALL"
 
         /** Four updates a second is smooth; the shade coalesces anything faster anyway. */
         const val PROGRESS_REFRESH_MS = 250L
