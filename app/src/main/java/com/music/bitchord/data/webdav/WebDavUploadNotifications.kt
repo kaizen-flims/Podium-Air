@@ -45,7 +45,7 @@ object WebDavUploadNotifications {
             else -> current.artist
         }
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification_logo)
+            .setSmallIcon(R.drawable.ic_podium_air_mono)
             .setContentTitle(title)
             .setContentText(text)
             // Indeterminate until something has a length to measure against.
@@ -61,7 +61,7 @@ object WebDavUploadNotifications {
 
     fun postDone(context: Context, summary: WebDavUploads.Summary) {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification_logo)
+            .setSmallIcon(R.drawable.ic_podium_air_mono)
             .setContentTitle(context.getString(R.string.upload_channel_name))
             .setContentText(
                 context.getString(

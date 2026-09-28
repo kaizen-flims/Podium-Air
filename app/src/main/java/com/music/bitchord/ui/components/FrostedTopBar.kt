@@ -55,7 +55,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -315,10 +314,9 @@ fun FrostedTopBar(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.ic_logo),
+                        painter = painterResource(R.drawable.podium_air_icon),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                        modifier = Modifier.height(18.dp),
+                        modifier = Modifier.size(18.dp),
                     )
                     // The dev flavor gets its own applicationId so it can sit
                     // installed next to the prod build; this badge is the
@@ -386,10 +384,9 @@ private fun FloatingAppMark(
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                painter = painterResource(R.drawable.ic_logo),
+                painter = painterResource(R.drawable.podium_air_icon),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(contentColor),
-                modifier = Modifier.size(width = 24.dp, height = 16.dp),
+                modifier = Modifier.size(24.dp),
             )
         }
         if (BuildConfig.FLAVOR == "dev") {
