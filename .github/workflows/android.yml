@@ -1,6 +1,9 @@
 name: Android CI
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
 
 jobs:
   build-debug:
@@ -29,13 +32,11 @@ jobs:
           path: app/build/outputs/apk/*/debug/*.apk
 
   build-signed-release:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
-      PODIUM_AIR_KEYSTORE_BASE64: ${{ secrets.PODIUM_AIR_KEYSTORE_BASE64 }}
-      PODIUM_AIR_KEYSTORE_PASSWORD: ${{ secrets.PODIUM_AIR_KEYSTORE_PASSWORD }}
-      PODIUM_AIR_KEY_ALIAS: ${{ secrets.PODIUM_AIR_KEY_ALIAS }}
-      PODIUM_AIR_KEY_PASSWORD: ${{ secrets.PODIUM_AIR_KEY_PASSWORD }}
       LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
       LASTFM_SECRET: ${{ secrets.LASTFM_SECRET }}
     steps:
@@ -46,23 +47,57 @@ jobs:
           distribution: temurin
           cache: gradle
       - name: Build signed release with Podium Air key
-        if: env.PODIUM_AIR_KEYSTORE_BASE64 != ''
+        env:
+          PODIUM_AIR_KEYSTORE_BASE64: ${{ secrets.PODIUM_AIR_KEYSTORE_BASE64 }}
+          PODIUM_AIR_KEYSTORE_PASSWORD: ${{ secrets.PODIUM_AIR_KEYSTORE_PASSWORD }}
+          PODIUM_AIR_KEY_ALIAS: ${{ secrets.PODIUM_AIR_KEY_ALIAS }}
+          PODIUM_AIR_KEY_PASSWORD: ${{ secrets.PODIUM_AIR_KEY_PASSWORD }}
         run: |
           set -eu
+          test -n "$PODIUM_AIR_KEYSTORE_BASE64" || { echo 'Missing Podium Air signing secrets'; exit 1; }
           test -n "$PODIUM_AIR_KEYSTORE_PASSWORD"
           test -n "$PODIUM_AIR_KEY_ALIAS"
           test -n "$PODIUM_AIR_KEY_PASSWORD"
           printf '%s' "$PODIUM_AIR_KEYSTORE_BASE64" | base64 -d > podium-air-release.jks
+          chmod 600 podium-air-release.jks
           {
             echo 'storeFile=podium-air-release.jks'
             printf 'storePassword=%s\n' "$PODIUM_AIR_KEYSTORE_PASSWORD"
             printf 'keyAlias=%s\n' "$PODIUM_AIR_KEY_ALIAS"
             printf 'keyPassword=%s\n' "$PODIUM_AIR_KEY_PASSWORD"
           } > keystore.properties
+          chmod 600 keystore.properties
           chmod +x gradlew
           ./gradlew assembleProdRelease
+      - name: Verify and name the universal signed APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          apks=(app/build/outputs/apk/prod/release/*universal*.apk)
+          test "${#apks[@]}" -eq 1
+          cp "${apks[0]}" Podium-Air-v1.0.0.apk
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -x "$apksigner"
+          "$apksigner" verify --print-certs Podium-Air-v1.0.0.apk > signing-verification.txt
+          grep -qi 'Signer #1 certificate SHA-256 digest: fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2' signing-verification.txt
+          aapt="$(dirname "$apksigner")/aapt"
+          "$aapt" dump badging Podium-Air-v1.0.0.apk | grep -q "package: name='com.podium.air' versionCode='1' versionName='1.0.0'"
       - uses: actions/upload-artifact@v4
-        if: env.PODIUM_AIR_KEYSTORE_BASE64 != ''
         with:
           name: podium-air-release-signed
-          path: app/build/outputs/apk/prod/release/*.apk
+          path: Podium-Air-v1.0.0.apk
+          if-no-files-found: error
+      - name: Publish Podium Air v1.0.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          if gh release view v1.0.0 >/dev/null 2>&1; then
+            echo 'Release v1.0.0 already exists; leaving it unchanged.'
+            exit 0
+          fi
+          gh release create v1.0.0 Podium-Air-v1.0.0.apk \
+            --target "$GITHUB_SHA" \
+            --title 'Podium Air v1.0.0' \
+            --notes 'Podium Air v1.0.0 for Android 8.0 and newer. Download Podium-Air-v1.0.0.apk and install it on your device. This universal APK includes ARM and x86_64 support, uses the com.podium.air app ID, and is signed with the dedicated Podium Air release key. Source and GPLv3 notices are in this repository.'
