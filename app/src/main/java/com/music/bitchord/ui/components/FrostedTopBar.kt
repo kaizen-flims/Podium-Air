@@ -314,7 +314,7 @@ fun FrostedTopBar(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.podium_air_icon),
+                        painter = painterResource(R.drawable.podium_air_ui_mono),
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
                     )
@@ -384,7 +384,7 @@ private fun FloatingAppMark(
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                painter = painterResource(R.drawable.podium_air_icon),
+                painter = painterResource(R.drawable.podium_air_ui_mono),
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
             )
