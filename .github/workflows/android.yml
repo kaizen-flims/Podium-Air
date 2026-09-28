@@ -81,16 +81,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          echo 'Release APK outputs:'
+          find app/build/outputs/apk/prod/release -maxdepth 1 -type f -name '*.apk' -printf '%f\n' | sort
           shopt -s nullglob
           apks=(app/build/outputs/apk/prod/release/*universal*.apk)
-          test "${#apks[@]}" -eq 1
+          if [ "${#apks[@]}" -ne 1 ]; then
+            echo "Expected one universal APK; found ${#apks[@]}"
+            exit 1
+          fi
           cp "${apks[0]}" Podium-Air-v1.0.0.apk
           apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
-          test -x "$apksigner"
-          "$apksigner" verify --print-certs Podium-Air-v1.0.0.apk > signing-verification.txt
-          grep -qi 'Signer #1 certificate SHA-256 digest: fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2' signing-verification.txt
+          test -x "$apksigner" || { echo 'Android apksigner is missing'; exit 1; }
+          "$apksigner" verify --print-certs Podium-Air-v1.0.0.apk | tee signing-verification.txt
+          grep -Fqi 'Signer #1 certificate SHA-256 digest: fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2' signing-verification.txt || { echo 'Release certificate fingerprint mismatch'; exit 1; }
           aapt="$(dirname "$apksigner")/aapt"
-          "$aapt" dump badging Podium-Air-v1.0.0.apk | grep -q "package: name='com.podium.air' versionCode='1' versionName='1.0.0'"
+          "$aapt" dump badging Podium-Air-v1.0.0.apk > apk-badging.txt
+          grep '^package: ' apk-badging.txt
+          grep -Fq "package: name='com.podium.air' versionCode='1' versionName='1.0.0'" apk-badging.txt || { echo 'Release app ID or version mismatch'; exit 1; }
       - uses: actions/upload-artifact@v4
         with:
           name: podium-air-release-signed
