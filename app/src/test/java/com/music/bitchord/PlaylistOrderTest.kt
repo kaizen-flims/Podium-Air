@@ -1,11 +1,26 @@
 package com.music.bitchord
 
 import com.music.bitchord.data.playlists.PlaylistOrder
+import com.music.bitchord.data.innertube.InnertubeParser
+import kotlinx.serialization.json.Json
 import org.junit.Assert.*
 import org.junit.Test
 import kotlin.random.Random
 
 class PlaylistOrderTest {
+    @Test fun `playlist parser retains repeated recordings by their entry IDs`() {
+        fun row(entry: String) = """{"musicResponsiveListItemRenderer":{
+          "playlistItemData":{"videoId":"same-recording","playlistSetVideoId":"$entry"},
+          "flexColumns":[{"musicResponsiveListItemFlexColumnRenderer":{"text":{"runs":[{"text":"Same song"}]}}}]
+        }}"""
+        val root = Json.parseToJsonElement("""{"continuationContents":{"musicPlaylistShelfContinuation":{
+          "contents":[${row("copy-one")},${row("copy-two")},${row("copy-one")}]
+        }}}""")
+        val songs = InnertubeParser.parsePlaylistShelf(root)!!.songs
+        assertEquals(listOf("copy-one", "copy-two"), songs.map { it.setVideoId })
+        assertEquals(listOf("same-recording", "same-recording"), songs.map { it.videoId })
+    }
+
     @Test fun `all positions including last can be reached without dropping an entry`() {
         val original = listOf("first", "second", "third", "fourth", "fifth")
         repeat(100) { seed ->

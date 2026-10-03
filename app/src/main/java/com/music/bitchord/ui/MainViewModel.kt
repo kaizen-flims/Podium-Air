@@ -957,22 +957,29 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         )
         val id = created.getOrElse { return Result.failure(it) }
         var imported = minOf(songs.size, 100)
+        if (identity == listenerKey()) recordImportedPlaylist(id, title, songs, imported)
         for (batch in songs.drop(100).chunked(100)) {
             if (identity != listenerKey()) return Result.failure(IllegalStateException("Account changed. $imported songs were imported; open the original account to find the playlist."))
             val added = YtMusicRepository.addToPlaylist(id, batch.map { it.videoId })
             if (added.isFailure) {
-                if (identity == listenerKey()) { libraryStale = true; loadPlaylists(); loadLibrary() }
+                if (identity == listenerKey()) recordImportedPlaylist(id, title, songs, imported)
                 return Result.failure(IllegalStateException("Created the playlist with $imported of ${songs.size} songs. Remaining songs could not be added; check your library before retrying."))
             }
             imported += batch.size
         }
-        if (identity == listenerKey()) {
-            setPlaylistOwned("VL$id", true)
-            libraryStale = true
-            loadPlaylists()
-            loadLibrary()
-        }
+        if (identity == listenerKey()) recordImportedPlaylist(id, title, songs, imported)
         return Result.success(id)
+    }
+
+    private fun recordImportedPlaylist(id: String, title: String, songs: List<Song>, count: Int) {
+        setPlaylistOwned("VL$id", true)
+        libraryStale = true
+        val created = UserPlaylist(id, title.trim().ifBlank { "Spotify playlist" }, "$count songs", songs.firstOrNull()?.thumbnailUrl)
+        _playlists.value = listOf(created) + _playlists.value.filterNot { it.playlistId == id }
+        editPlaylistShelf { items ->
+            listOf(ShelfItem(created.title, created.subtitle, created.thumbnailUrl, null, created.browseId)) +
+                items.filterNot { it.browseId == created.browseId }
+        }
     }
 
     /**
@@ -2016,7 +2023,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     _typeaheadResults.value = emptyList()
                     return@collectLatest
                 }
-                val result = YtMusicRepository.searchTypeahead(input).getOrNull()
+                val result = YtMusicRepository.searchTypeahead(input, SearchFilter.SONGS).getOrNull()
                 // If the field moved on, drop the result silently.
                 if (_query.value != input || searchSubmitted) return@collectLatest
                 // Cap results so the dropdown doesn't grow unbounded.

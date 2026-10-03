@@ -21,6 +21,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.music.bitchord.R
+import coil3.compose.AsyncImage
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import com.music.bitchord.data.model.ROW_ART_PX
+import com.music.bitchord.data.model.artworkAt
 import com.music.bitchord.data.YtMusicRepository
 import com.music.bitchord.data.model.SearchFilter
 import com.music.bitchord.data.model.SearchResult
@@ -90,7 +95,15 @@ fun AddPlaylistSongsSheet(
         LazyColumn(Modifier.weight(1f)) {
             itemsIndexed(songs, key = { _, song -> song.videoId }) { _, song ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SongRow(song, onClick = {}, modifier = Modifier.weight(1f), onMore = {})
+                    AsyncImage(
+                        model = song.artworkAt(ROW_ART_PX), contentDescription = null,
+                        modifier = Modifier.padding(vertical = 6.dp).size(48.dp).clip(RoundedCornerShape(8.dp)),
+                    )
+                    Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
+                        Text(song.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(song.artist, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                     IconButton(enabled = adding == null && song.videoId !in added, onClick = {
                         adding = song.videoId
                         onBusyChange(true)

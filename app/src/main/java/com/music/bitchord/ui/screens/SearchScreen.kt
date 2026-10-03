@@ -182,27 +182,24 @@ fun SearchScreen(
         ) {
             when {
                 suggesting -> {
-                    searchSuggestions(
-                        suggestions = suggestions,
-                        // Picking one is done typing, so the keyboard comes down
-                        // with it and the results get the whole screen.
-                        onClick = { term ->
-                            onSuggestionClick(term)
-                            focusManager.clearFocus()
-                        },
-                        onFill = onQueryChange,
-                    )
+                    // Put songs within reach of the keyboard instead of below a long completion list.
                     if (showTypeahead) {
                         searchTypeaheadDropdown(
                             typeaheadResults = typeaheadResults,
                             onSongClick = { song -> onTopResultPlay(song) },
                             onSongLongPress = onTypeaheadLongPress,
                             onSongAdd = onTypeaheadAdd,
-                            onBrowseClick = { item ->
-                                onBrowseClick(item)
-                            },
+                            onBrowseClick = onBrowseClick,
                         )
                     }
+                    searchSuggestions(
+                        suggestions = suggestions.take(4),
+                        onClick = { term ->
+                            onSuggestionClick(term)
+                            focusManager.clearFocus()
+                        },
+                        onFill = onQueryChange,
+                    )
                 }
                 results == null -> if (history.isEmpty()) {
                     item { MessageState(stringResource(R.string.search_empty)) }
