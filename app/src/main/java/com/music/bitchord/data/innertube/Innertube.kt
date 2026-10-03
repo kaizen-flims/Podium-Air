@@ -646,9 +646,10 @@ object Innertube {
      * here we still get full search results (tracks, artists, albums) but they
      * land as anonymous lookups that don't touch the user's account history.
      */
-    suspend fun searchTypeahead(query: String): JsonObject =
+    suspend fun searchTypeahead(query: String, params: String? = null): JsonObject =
         postMusicAnonymous("search") {
             put("query", query)
+            params?.let { put("params", it) }
         }
 
     /** The stats endpoints a player response nominates for one playback. */
@@ -1045,6 +1046,19 @@ object Innertube {
                     put("action", "ACTION_REMOVE_VIDEO")
                     put("setVideoId", setVideoId)
                     put("removedVideoId", videoId)
+                }
+            }
+        }
+    }
+
+    suspend fun reorderPlaylist(playlistId: String, moves: List<com.music.bitchord.data.playlists.PlaylistMove>) {
+        if (moves.isEmpty()) return
+        editPlaylist(playlistId) {
+            moves.forEach { move ->
+                addJsonObject {
+                    put("action", "ACTION_MOVE_VIDEO_BEFORE")
+                    put("setVideoId", move.entryId)
+                    put("movedSetVideoIdSuccessor", move.beforeEntryId)
                 }
             }
         }

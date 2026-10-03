@@ -5,6 +5,10 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 
+concurrency:
+  group: android-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   build-debug:
     runs-on: ubuntu-latest
@@ -24,12 +28,37 @@ jobs:
           if [ "$GITHUB_REF" = 'refs/heads/main' ]; then
             ./gradlew assembleProdDebug
           else
-            ./gradlew assembleDevDebug
+            ./gradlew :app:testDevDebugUnitTest --tests 'com.music.bitchord.PlaylistOrderTest' --tests 'com.music.bitchord.SpotifyPlaylistImportTest' --tests 'com.music.bitchord.SearchPagingTest' --tests 'com.music.bitchord.PlaylistOwnershipTest' assembleDevDebug
           fi
+      - name: Verify isolated preview APK
+        if: github.ref != 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp app/build/outputs/apk/dev/debug/*universal*.apk Podium-Air-Playlist-Preview.apk
+          aapt="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
+          "$aapt" dump badging Podium-Air-Playlist-Preview.apk > preview-badging.txt
+          grep -Fq "package: name='com.podium.air.dev'" preview-badging.txt
+          grep -Fq "application-label:'Podium Air Preview'" preview-badging.txt
+          sha256sum Podium-Air-Playlist-Preview.apk > Podium-Air-Playlist-Preview.apk.sha256
       - uses: actions/upload-artifact@v4
+        if: github.ref != 'refs/heads/main'
+        with:
+          name: podium-air-playlist-preview
+          path: |
+            Podium-Air-Playlist-Preview.apk
+            Podium-Air-Playlist-Preview.apk.sha256
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
         with:
           name: podium-air-debug
-          path: app/build/outputs/apk/*/debug/*.apk
+          path: app/build/outputs/apk/prod/debug/*.apk
+      - uses: actions/upload-artifact@v4
+        if: always() && github.ref != 'refs/heads/main'
+        with:
+          name: playlist-preview-test-results
+          path: app/build/reports/tests/testDevDebugUnitTest/
 
   build-signed-release:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

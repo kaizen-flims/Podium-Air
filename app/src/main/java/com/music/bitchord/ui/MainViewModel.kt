@@ -897,6 +897,93 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** Playlist editor operations return errors to the sheet instead of silently closing. */
+    suspend fun addPlaylistSong(playlist: UserPlaylist, song: Song): Result<Boolean> {
+        if (!requireSignIn() || _playlistOwned.value[playlist.browseId] != true) {
+            return Result.failure(IllegalStateException("Sign in to the account that owns this playlist."))
+        }
+        val identity = listenerKey()
+        val existing = YtMusicRepository.playlistEntries(playlist.browseId).getOrElse { return Result.failure(it) }
+        if (identity != listenerKey()) return Result.failure(IllegalStateException("The active account changed."))
+        if (existing.any { it.videoId == song.videoId }) return Result.success(true)
+        val result = YtMusicRepository.addToPlaylist(playlist.playlistId, listOf(song.videoId))
+        return result.map { entries ->
+            if (identity == listenerKey()) {
+                libraryStale = true
+                appendToOpenPlaylist(playlist.browseId, song, entries[song.videoId])
+            }
+            false
+        }
+    }
+
+    suspend fun arrangePlaylistSongs(
+        playlist: UserPlaylist, original: List<Song>, ordered: List<Song>,
+    ): Result<Unit> {
+        if (!requireSignIn() || _playlistOwned.value[playlist.browseId] != true) {
+            return Result.failure(IllegalStateException("Sign in to the account that owns this playlist."))
+        }
+        val identity = listenerKey()
+        val current = YtMusicRepository.playlistEntries(playlist.browseId).getOrElse { return Result.failure(it) }
+        if (identity != listenerKey()) return Result.failure(IllegalStateException("The active account changed."))
+        if (current.map { it.setVideoId } != original.map { it.setVideoId }) {
+            return Result.failure(IllegalStateException("The playlist changed. Reopen Arrange songs and try again."))
+        }
+        val moves = runCatching {
+            com.music.bitchord.data.playlists.PlaylistOrder.moves(
+                original.map { it.setVideoId.orEmpty() }, ordered.map { it.setVideoId.orEmpty() },
+            )
+        }.getOrElse { return Result.failure(it) }
+        val result = YtMusicRepository.reorderPlaylist(playlist.playlistId, moves)
+        // Fetch the server's answer even after a rejected batch: some edits may have landed.
+        val refreshed = YtMusicRepository.playlistEntries(playlist.browseId)
+        if (identity == listenerKey()) {
+            // A confirmed edit remains visible if the follow-up read temporarily fails.
+            val visible = refreshed.getOrNull() ?: ordered.takeIf { result.isSuccess }
+            visible?.let { songs ->
+                _detailStack.value = _detailStack.value.map { page ->
+                    if (page.browseId == playlist.browseId) page.copy(songs = UiState.Success(songs)) else page
+                }
+            }
+            libraryStale = true
+        }
+        return result
+    }
+
+    suspend fun importSpotifyPlaylist(title: String, songs: List<Song>): Result<String> {
+        if (!requireSignIn()) return Result.failure(IllegalStateException("Sign in to YouTube Music first."))
+        if (songs.isEmpty()) return Result.failure(IllegalStateException("No matched songs to import."))
+        val identity = listenerKey()
+        // One atomic create with its initial tracks avoids leaving an empty playlist on failure.
+        val created = YtMusicRepository.createPlaylist(
+            title.trim().ifBlank { "Spotify playlist" }, PlaylistPrivacy.PRIVATE, songs.take(100).map { it.videoId },
+        )
+        val id = created.getOrElse { return Result.failure(it) }
+        var imported = minOf(songs.size, 100)
+        if (identity == listenerKey()) recordImportedPlaylist(id, title, songs, imported)
+        for (batch in songs.drop(100).chunked(100)) {
+            if (identity != listenerKey()) return Result.failure(IllegalStateException("Account changed. $imported songs were imported; open the original account to find the playlist."))
+            val added = YtMusicRepository.addToPlaylist(id, batch.map { it.videoId })
+            if (added.isFailure) {
+                if (identity == listenerKey()) recordImportedPlaylist(id, title, songs, imported)
+                return Result.failure(IllegalStateException("Created the playlist with $imported of ${songs.size} songs. Remaining songs could not be added; check your library before retrying."))
+            }
+            imported += batch.size
+        }
+        if (identity == listenerKey()) recordImportedPlaylist(id, title, songs, imported)
+        return Result.success(id)
+    }
+
+    private fun recordImportedPlaylist(id: String, title: String, songs: List<Song>, count: Int) {
+        setPlaylistOwned("VL$id", true)
+        libraryStale = true
+        val created = UserPlaylist(id, title.trim().ifBlank { "Spotify playlist" }, "$count songs", songs.firstOrNull()?.thumbnailUrl)
+        _playlists.value = listOf(created) + _playlists.value.filterNot { it.playlistId == id }
+        editPlaylistShelf { items ->
+            listOf(ShelfItem(created.title, created.subtitle, created.thumbnailUrl, null, created.browseId)) +
+                items.filterNot { it.browseId == created.browseId }
+        }
+    }
+
     /**
      * Creates a playlist, seeded with [song] when the flow started from a
      * track's menu — one request, so it can't half-succeed into an empty
@@ -1720,6 +1807,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             _searchScrollReset.value += 1
             return
         }
+        // Publish the edit immediately, independently of text-suggestion networking.
+        _suggestions.value = listOf(newValue)
+        _typeaheadResults.value = emptyList()
         // Reset the submission gate so typeahead pipelines fire again.
         searchSubmitted = false
         // While typing, surface text completions — the pipeline already feeds
@@ -1935,12 +2025,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     _typeaheadResults.value = emptyList()
                     return@collectLatest
                 }
-                val result = YtMusicRepository.searchTypeahead(input).getOrNull()
+                val result = YtMusicRepository.searchTypeahead(input, SearchFilter.SONGS).getOrNull()
                 // If the field moved on, drop the result silently.
-                if (_query.value != input) {
-                    _typeaheadResults.value = emptyList()
-                    return@collectLatest
-                }
+                if (_query.value != input || searchSubmitted) return@collectLatest
                 // Cap results so the dropdown doesn't grow unbounded.
                 _typeaheadResults.value = result?.rows.orEmpty().take(TYPEAHEAD_MAX_RESULTS)
             }

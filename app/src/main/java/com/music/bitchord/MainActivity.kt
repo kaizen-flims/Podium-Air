@@ -128,6 +128,7 @@ import com.music.bitchord.data.model.SearchFilter
 import com.music.bitchord.data.model.SearchResult
 import com.music.bitchord.data.model.ShelfItem
 import com.music.bitchord.data.model.Song
+import com.music.bitchord.data.model.UserPlaylist
 import com.music.bitchord.data.model.UiState
 import com.music.bitchord.data.model.EntityType
 import com.music.bitchord.data.model.SearchHistoryEntity
@@ -523,6 +524,10 @@ private fun BitChordApp(
     // Separate from [songActions] so the menu can close behind it — the picker
     // is the next step, not a second sheet stacked on the first.
     var playlistTarget by remember { mutableStateOf<Song?>(null) }
+    var playlistAddingTo by remember { mutableStateOf<UserPlaylist?>(null) }
+    var playlistArranging by remember { mutableStateOf<UserPlaylist?>(null) }
+    var importingSpotify by remember { mutableStateOf(false) }
+    var playlistToolBusy by remember { mutableStateOf(false) }
     // The picker opened from the Library tab, where there is no track and
     // creating the playlist is the whole errand.
     var creatingPlaylist by remember { mutableStateOf(false) }
@@ -662,6 +667,7 @@ private fun BitChordApp(
     val pinnedToOriginal by OriginalVersion.pinned.collectAsStateWithLifecycle()
     val qualityUpgradesInFlight by NerdStats.racingLossless.collectAsStateWithLifecycle()
     val playlists by viewModel.playlists.collectAsStateWithLifecycle()
+    val playlistOwnership by viewModel.playlistOwned.collectAsStateWithLifecycle()
     val playlistsLoading by viewModel.playlistsLoading.collectAsStateWithLifecycle()
 
     // Settings has no tab of its own — it sits on top of whatever tab was
@@ -2688,6 +2694,12 @@ private fun BitChordApp(
                                 viewModel.openDetail(id, name, "Artist", null, BrowseType.ARTIST)
                             },
                             onAddSuggested = { song -> viewModel.addSuggestedSong(page.browseId, song) },
+                            onAddSongs = if (signedIn && playlistOwnership[page.browseId] == true) {
+                                { playlistAddingTo = UserPlaylist(page.browseId.removePrefix("VL"), page.title, page.subtitle, page.thumbnailUrl) }
+                            } else null,
+                            onArrangeSongs = if (signedIn && playlistOwnership[page.browseId] == true) {
+                                { playlistArranging = UserPlaylist(page.browseId.removePrefix("VL"), page.title, page.subtitle, page.thumbnailUrl) }
+                            } else null,
                             // Saving is an account action, so it isn't offered to a
                             // guest at all — same as the like and add-to-playlist rows
                             // in the track menu.
@@ -2901,6 +2913,10 @@ private fun BitChordApp(
                             onHistoryRemove = viewModel::removeSearch,
                             onHistoryClear = viewModel::clearSearchHistory,
                             onTypeaheadLongPress = openSongMenu,
+                            onTypeaheadAdd = if (signedIn) ({ song ->
+                                viewModel.loadPlaylists()
+                                playlistTarget = song
+                            }) else null,
                             contentPadding = listPadding,
                         )
                         else -> LibraryScreen(
@@ -2914,6 +2930,7 @@ private fun BitChordApp(
                             // does nothing; see [onBrowseLongPress].
                             onShelfItemLongPress = onBrowseLongPress,
                             onNewPlaylist = { creatingPlaylist = true },
+                            onImportSpotify = { importingSpotify = true },
                             onShowAll = { shelf -> libraryShowAll = shelf },
                             replayCards = replayCards,
                             replayHolder = account?.name.orEmpty(),
@@ -3697,6 +3714,51 @@ private fun BitChordApp(
                 containerColor = MaterialTheme.colorScheme.background,
             ) {
                 DownloadManagerSheet(onDismiss = closeDownloadManager)
+            }
+        }
+
+        // Playlist tools stay on this page and do not touch the playback queue.
+        if (playlistAddingTo != null || playlistArranging != null || importingSpotify) {
+            val toolsSheetState = androidx.compose.material3.rememberModalBottomSheetState(
+                skipPartiallyExpanded = true,
+                confirmValueChange = { it != androidx.compose.material3.SheetValue.Hidden || !playlistToolBusy },
+            )
+            ModalBottomSheet(
+                sheetState = toolsSheetState,
+                onDismissRequest = {
+                    if (!playlistToolBusy) {
+                        playlistAddingTo = null; playlistArranging = null; importingSpotify = false
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.background,
+            ) {
+                val adding = playlistAddingTo
+                val arranging = playlistArranging
+                when {
+                    adding != null -> com.music.bitchord.ui.components.AddPlaylistSongsSheet(
+                        playlist = adding,
+                        onAdd = { viewModel.addPlaylistSong(adding, it) },
+                        onBusyChange = { playlistToolBusy = it },
+                    )
+                    arranging != null -> com.music.bitchord.ui.components.ArrangePlaylistSongsSheet(
+                        playlist = arranging,
+                        onSave = { original, ordered -> viewModel.arrangePlaylistSongs(arranging, original, ordered) },
+                        onSaved = {
+                            AppSettings.setDetailSongSort(arranging.browseId, SongSort.DEFAULT)
+                            playlistArranging = null
+                            showQueueNotice(context.getString(R.string.playlist_order_saved))
+                        },
+                        onBusyChange = { playlistToolBusy = it },
+                    )
+                    importingSpotify -> com.music.bitchord.ui.components.SpotifyImportSheet(
+                        onImport = viewModel::importSpotifyPlaylist,
+                        onImported = {
+                            importingSpotify = false
+                            showQueueNotice(context.getString(R.string.playlist_import_complete))
+                        },
+                        onBusyChange = { playlistToolBusy = it },
+                    )
+                }
             }
         }
 

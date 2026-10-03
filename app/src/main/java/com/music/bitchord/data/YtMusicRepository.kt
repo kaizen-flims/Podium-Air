@@ -345,10 +345,10 @@ object YtMusicRepository {
      * IME Search / tapping a suggestion) still use the normal authenticated
      * [searchPage] path and are recorded properly.
      */
-    suspend fun searchTypeahead(input: String): Result<SearchPage> =
-        call("typeahead:$input") {
+    suspend fun searchTypeahead(input: String, filter: SearchFilter = SearchFilter.ALL): Result<SearchPage> =
+        call("typeahead:$filter:$input") {
             InnertubeParser.parseSearchPage(
-                Innertube.searchTypeahead(input),
+                Innertube.searchTypeahead(input, filter.params),
                 includeVideos = false,
             ).let { page ->
                 SearchPage(page.rows.distinctBy { it.identityKey() }, page.continuation)
@@ -698,6 +698,29 @@ object YtMusicRepository {
         songsPaged(browseId).ifEmpty { error("No tracks here") }
     }
 
+    /** Complete editable playlist entries; never return a truncated listing or collapse duplicates. */
+    suspend fun playlistEntries(browseId: String): Result<List<Song>> = call("entries:$browseId") {
+        require(browseId.startsWith("VL")) { "This is not an editable playlist." }
+        var response = Innertube.browse(browseId)
+        require(InnertubeParser.parsePlaylistOwned(response) == true) { "This account does not own this playlist." }
+        val out = LinkedHashMap<String, Song>()
+        val seenTokens = HashSet<String>()
+        var pages = 0
+        while (true) {
+            val shelf = InnertubeParser.parsePlaylistShelf(response)
+            if (shelf == null) {
+                // A newly created empty playlist can have a header but no shelf yet.
+                if (pages == 0 && InnertubeParser.collectSongsDeep(response).isEmpty()) break
+                error("Could not read all playlist entries. Reload and try again.")
+            }
+            shelf.songs.forEach { song -> out.putIfAbsent(song.setVideoId ?: song.videoId, song) }
+            val next = shelf.continuation ?: break
+            check(++pages < MAX_PAGES && seenTokens.add(next)) { "Could not read the complete playlist. No edits were sent." }
+            response = Innertube.browseContinuation(next)
+        }
+        out.values.toList()
+    }
+
     /**
      * Every track behind a browse id, following continuations.
      *
@@ -877,6 +900,11 @@ object YtMusicRepository {
     ): Result<Unit> = call("playlist:remove") {
         Innertube.removeFromPlaylist(playlistId, entries)
     }
+
+    suspend fun reorderPlaylist(
+        playlistId: String,
+        moves: List<com.music.bitchord.data.playlists.PlaylistMove>,
+    ): Result<Unit> = call("playlist:reorder") { Innertube.reorderPlaylist(playlistId, moves) }
 
     suspend fun renamePlaylist(playlistId: String, title: String): Result<Unit> =
         call("playlist:rename") { Innertube.renamePlaylist(playlistId, title) }

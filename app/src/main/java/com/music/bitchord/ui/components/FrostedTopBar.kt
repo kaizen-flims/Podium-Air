@@ -324,7 +324,7 @@ fun FrostedTopBar(
                     // glance once both are running.
                     if (BuildConfig.FLAVOR == "dev") {
                         Text(
-                            text = "Dev",
+                            text = "Preview",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(start = 6.dp),

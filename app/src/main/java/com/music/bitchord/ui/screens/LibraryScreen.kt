@@ -88,6 +88,7 @@ fun LibraryScreen(
     onShelfItemClick: (ShelfItem) -> Unit,
     onShelfItemLongPress: (ShelfItem) -> Unit,
     onNewPlaylist: () -> Unit,
+    onImportSpotify: () -> Unit = {},
     /**
      * A shelf's "Show all" — every shelf's row here stops at five cards (see
      * [LibraryGridShelf]), so this is the only way to reach whatever didn't
@@ -249,6 +250,12 @@ fun LibraryScreen(
                     )
                 }
                 return@LazyColumn
+            }
+            item(key = "spotify-import") {
+                androidx.compose.material3.TextButton(
+                    onClick = onImportSpotify,
+                    modifier = Modifier.padding(horizontal = PAGE_GUTTER),
+                ) { Text(stringResource(R.string.playlist_import_spotify)) }
             }
             when (state) {
                 is UiState.Loading -> librarySkeleton()
