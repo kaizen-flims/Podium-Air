@@ -119,7 +119,8 @@ android {
         create("dev") {
             dimension = "env"
             applicationId = "com.podium.air.dev"
-            resValue("string", "app_name", "Podium Air Dev")
+            versionNameSuffix = "-playlist-preview"
+            resValue("string", "app_name", "Podium Air Preview")
         }
         create("prod") {
             dimension = "env"

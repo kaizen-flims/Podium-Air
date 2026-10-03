@@ -247,6 +247,8 @@ fun DetailScreen(
      * photo, not in this header.
      */
     songSort: SongSort = SongSort.DEFAULT,
+    onAddSongs: (() -> Unit)? = null,
+    onArrangeSongs: (() -> Unit)? = null,
 ) {
     val rawSongs = (page.songs as? UiState.Success)?.data.orEmpty()
     val songs = remember(rawSongs, songSort) { rawSongs.sortedForDetail(songSort) }
@@ -384,6 +386,7 @@ fun DetailScreen(
                 if (isArtist) {
                     ArtistHeader(page = page, palette = palette, artHeight = artHeight)
                 } else {
+                    Column {
                     ReleaseHeader(
                         page = page,
                         palette = palette,
@@ -405,6 +408,23 @@ fun DetailScreen(
                         onArtistClick = onArtistClick,
                         onToggleLibrary = onToggleLibrary,
                     )
+                    if (onAddSongs != null || onArrangeSongs != null) {
+                        Row(Modifier.fillMaxWidth().padding(horizontal = PAGE_GUTTER), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            onAddSongs?.let { action ->
+                                androidx.compose.material3.TextButton(onClick = action) {
+                                    Icon(Icons.Rounded.Add, contentDescription = null)
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(stringResource(R.string.playlist_add_songs))
+                                }
+                            }
+                            onArrangeSongs?.let { action ->
+                                androidx.compose.material3.TextButton(onClick = action) {
+                                    Text(stringResource(R.string.playlist_arrange_songs))
+                                }
+                            }
+                        }
+                    }
+                    }
                 }
             }
 

@@ -1145,4 +1145,28 @@
     <string name="card_songs_format">%1$s songs</string>
 
     <string name="made_with_love_by_prem">Made with ❤️ by Prem</string>
+
+    <string name="playlist_add_songs">Add songs</string>
+    <string name="playlist_search_songs">Search songs or artists</string>
+    <string name="playlist_type_to_search">Type at least two letters to find songs.</string>
+    <string name="playlist_no_results">No songs found. Try another name.</string>
+    <string name="playlist_arrange_songs">Arrange songs</string>
+    <string name="playlist_arrange_hint">Drag a handle or use the arrows. Save to update your playlist order.</string>
+    <string name="playlist_reload_entries">Some entries cannot be moved yet. Reload this playlist and try again.</string>
+    <string name="playlist_move_up">Move song up</string>
+    <string name="playlist_move_down">Move song down</string>
+    <string name="playlist_save_order">Save order</string>
+    <string name="playlist_order_saved">Playlist order saved</string>
+    <string name="playlist_import_spotify">Import from Spotify</string>
+    <string name="playlist_import_description">Match Spotify songs to YouTube Music and create a private playlist.</string>
+    <string name="playlist_import_public_preview">Use a public Spotify playlist link. Spotify\'s public preview can omit tracks from long, private or region-restricted playlists. Only selected matches shown here will be imported, in their original order.</string>
+    <string name="playlist_spotify_link">Spotify playlist link</string>
+    <string name="playlist_preview_import">Find matching songs</string>
+    <string name="playlist_import_name">New playlist name</string>
+    <string name="playlist_import_matched">%1$d selected · %2$d available Spotify tracks</string>
+    <string name="playlist_import_omitted">%1$d unsupported entries were skipped.</string>
+    <string name="playlist_import_unmatched">No confident match found — skipped</string>
+    <string name="playlist_import_confirm">Import %1$d songs</string>
+    <string name="playlist_import_progress">Matching %1$d of %2$d songs…</string>
+    <string name="playlist_import_complete">Spotify playlist imported</string>
 </resources>

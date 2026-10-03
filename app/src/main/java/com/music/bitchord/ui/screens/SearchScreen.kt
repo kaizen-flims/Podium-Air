@@ -111,6 +111,7 @@ fun SearchScreen(
     onHistoryClear: () -> Unit,
     /** Long-press handler for typeahead rows — opens the song actions sheet. */
     onTypeaheadLongPress: ((Song) -> Unit)? = null,
+    onTypeaheadAdd: ((Song) -> Unit)? = null,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues,
 ) {
@@ -136,7 +137,7 @@ fun SearchScreen(
     // MainViewModel.suggestions. Nothing below it is worth showing while it is
     // up: the results are for whatever was searched before this edit began,
     // and so are the filter tabs above them.
-    val suggesting = suggestions.isNotEmpty()
+    val suggesting = suggestions.isNotEmpty() || typeaheadResults.isNotEmpty()
     // Live media results arrive from the parallel typeahead pipeline; show
     // them only while the user is still typing (suggestions visible), so they
     // appear as a dropdown beneath the text completions rather than floating
@@ -196,6 +197,7 @@ fun SearchScreen(
                             typeaheadResults = typeaheadResults,
                             onSongClick = { song -> onTopResultPlay(song) },
                             onSongLongPress = onTypeaheadLongPress,
+                            onSongAdd = onTypeaheadAdd,
                             onBrowseClick = { item ->
                                 onBrowseClick(item)
                             },
@@ -488,6 +490,7 @@ private fun LazyListScope.searchTypeaheadDropdown(
     typeaheadResults: List<SearchResult>,
     onSongClick: (Song) -> Unit,
     onSongLongPress: ((Song) -> Unit)?,
+    onSongAdd: ((Song) -> Unit)?,
     onBrowseClick: (BrowseItem) -> Unit,
 ) {
     item(key = "typeahead:divider") {
@@ -509,6 +512,7 @@ private fun LazyListScope.searchTypeaheadDropdown(
                 song = result.song,
                 onClick = { onSongClick(result.song) },
                 onLongPress = onSongLongPress?.let { { it(result.song) } },
+                onAdd = onSongAdd?.let { { it(result.song) } },
             )
             is SearchResult.Browse -> BrowseRow(
                 item = result.item,
@@ -519,6 +523,7 @@ private fun LazyListScope.searchTypeaheadDropdown(
                 song = result.song,
                 onClick = { onSongClick(result.song) },
                 onLongPress = onSongLongPress?.let { { it(result.song) } },
+                onAdd = onSongAdd?.let { { it(result.song) } },
             )
         }
     }
@@ -533,6 +538,7 @@ private fun TypeaheadSongRow(
     song: Song,
     onClick: () -> Unit,
     onLongPress: (() -> Unit)? = null,
+    onAdd: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
@@ -567,6 +573,11 @@ private fun TypeaheadSongRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
+        onAdd?.let { action ->
+            IconButton(onClick = action) {
+                Icon(Icons.AutoMirrored.Rounded.PlaylistAdd, stringResource(R.string.playlist_add_songs))
+            }
         }
     }
 }
