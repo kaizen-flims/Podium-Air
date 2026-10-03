@@ -708,7 +708,11 @@ object YtMusicRepository {
         var pages = 0
         while (true) {
             val shelf = InnertubeParser.parsePlaylistShelf(response)
-                ?: error("Could not read all playlist entries. Reload and try again.")
+            if (shelf == null) {
+                // A newly created empty playlist can have a header but no shelf yet.
+                if (pages == 0 && InnertubeParser.collectSongsDeep(response).isEmpty()) break
+                error("Could not read all playlist entries. Reload and try again.")
+            }
             shelf.songs.forEach { song -> out.putIfAbsent(song.setVideoId ?: song.videoId, song) }
             val next = shelf.continuation ?: break
             check(++pages < MAX_PAGES && seenTokens.add(next)) { "Could not read the complete playlist. No edits were sent." }

@@ -937,7 +937,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         // Fetch the server's answer even after a rejected batch: some edits may have landed.
         val refreshed = YtMusicRepository.playlistEntries(playlist.browseId)
         if (identity == listenerKey()) {
-            refreshed.onSuccess { songs ->
+            // A confirmed edit remains visible if the follow-up read temporarily fails.
+            val visible = refreshed.getOrNull() ?: ordered.takeIf { result.isSuccess }
+            visible?.let { songs ->
                 _detailStack.value = _detailStack.value.map { page ->
                     if (page.browseId == playlist.browseId) page.copy(songs = UiState.Success(songs)) else page
                 }
