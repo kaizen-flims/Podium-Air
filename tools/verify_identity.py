@@ -4,7 +4,7 @@ import re
 import xml.etree.ElementTree as ET
 r = Path(__file__).resolve().parents[1]
 gradle = (r / 'app/build.gradle.kts').read_text()
-for value in ['applicationId = "com.podium.air"', 'applicationId = "com.podium.air.dev"', 'namespace = "com.music.bitchord"', 'versionCode = 2']:
+for value in ['applicationId = "com.podium.air"', 'applicationId = "com.podium.air.dev"', 'namespace = "com.music.bitchord"', 'versionCode = 3']:
     assert value in gradle, value
 assert 'private const val BRIDGE_NAME = "BitChordSpotifyTokenBridge"' in (r / 'app/src/main/java/com/music/bitchord/data/canvas/SpotifyToken.kt').read_text()
 assert 'const val SESSION_ID = "BitChordPlayback"' in (r / 'app/src/main/java/com/music/bitchord/playback/PlaybackService.kt').read_text()
