@@ -1,7 +1,5 @@
 name: Podium Air platform previews
 on:
-  push:
-    branches: [feat/upstream-three-platform-integration]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -19,6 +17,9 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
       - name: Verify preserved identity and resource integrity
         run: python3 tools/verify_identity.py
@@ -46,6 +47,7 @@ jobs:
           path: app/build/reports/tests/
   windows:
     needs: android
+    if: ${{ always() && !cancelled() }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -86,6 +88,7 @@ jobs:
             sharedUi/build/reports/tests/
   macos:
     needs: android
+    if: ${{ always() && !cancelled() }}
     strategy:
       fail-fast: false
       matrix:

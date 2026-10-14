@@ -210,7 +210,7 @@ internal class DesktopStatusNotifierController(
 
     private fun itemProperties(): Map<String, Variant<*>> = mapOf(
         "Category" to Variant("ApplicationStatus"),
-        "Id" to Variant("bitchord"),
+        "Id" to Variant("podium-air"),
         "Title" to Variant("Podium Air"),
         "Status" to Variant("Active"),
         // The logo itself when it has been rendered, and a themed name as the fallback for a host

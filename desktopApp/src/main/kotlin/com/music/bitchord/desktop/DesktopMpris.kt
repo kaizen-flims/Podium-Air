@@ -201,7 +201,7 @@ internal class DesktopMprisController(
             "CanRaise" to variant(false),
             "HasTrackList" to variant(false),
             "Identity" to variant("Podium Air"),
-            "DesktopEntry" to variant("bitchord"),
+            "DesktopEntry" to variant("podium-air"),
             "SupportedUriSchemes" to variant(listOf("file", "http", "https"), "as"),
             "SupportedMimeTypes" to variant(
                 listOf("audio/mpeg", "audio/mp4", "audio/aac", "audio/flac", "audio/ogg"),
