@@ -15,6 +15,13 @@
 - Normalize one upstream test file from Windows-1252 to UTF-8 and remove resource
   duplicates introduced by the branding merge.
 
+- Fix inherited Android locale coverage and orphaned localized resources; keep live
+  lyrics scraping opt-in and report it separately from deterministic tests.
+- Adapt Intel macOS ONNX runtime/model weight representation with SHA-256
+  provenance and exact effective-weight verification; retain original assets
+  on Android, Windows and Apple Silicon. Require native/model initialization
+  in the desktop Automix test instead of silently returning on failure.
+
 No release, default-branch merge, website change or existing-repository deletion.
 Build and runtime status is documented separately; these source changes are not
 claims of full feature parity or production readiness.

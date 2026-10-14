@@ -1,0 +1,126 @@
+{
+  "code_commit": "fdb459cd999da9a03858b40ba39c9e8043dce988",
+  "workflow_run": 38621132271,
+  "artifacts": [
+    {
+      "name": "podium-air-macos-x64-pkg-preview",
+      "id": 11922657216,
+      "size_in_bytes": 362813233,
+      "archive_sha256": "sha256:605fffc3470f88bc7e77ad594ac033c60c0f0bfc7c483506b1a1fd156062566c",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922657216",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-macos-arm64-app-preview",
+      "id": 11922631631,
+      "size_in_bytes": 317126961,
+      "archive_sha256": "sha256:e2dc29d4fff524982c581a65f21d31a76e758b437cc5bfec0cb836c48ccb0364",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922631631",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-macos-arm64-test-reports",
+      "id": 11922611834,
+      "size_in_bytes": 109974,
+      "archive_sha256": "sha256:17ae29ac398c9d09f91168a2a2ea1eafda40e5f206742ac2485b90541054e478",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922611834",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-macos-arm64-dmg-preview",
+      "id": 11922338367,
+      "size_in_bytes": 323562884,
+      "archive_sha256": "sha256:b1f94307c9e5453f04bdc9d414c3d36553d16835c11640a4ab12f3ab2b4f6d44",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922338367",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-macos-x64-app-preview",
+      "id": 11922274342,
+      "size_in_bytes": 362518967,
+      "archive_sha256": "sha256:347da961bdae246b137de430bf3591684354576a34ced2be9bf7deab2720c1ee",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922274342",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-windows-portable-preview",
+      "id": 11922253672,
+      "size_in_bytes": 312049267,
+      "archive_sha256": "sha256:40ddf520d8ea05ebfcc4002781a0876e61d1d39a1b981462e291e73cd624a9c4",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922253672",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-android-test-reports",
+      "id": 11922214258,
+      "size_in_bytes": 126737,
+      "archive_sha256": "sha256:010315208b6aec1836421ee97447c7d732ba05502afce5cf83441db7969ed6b6",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922214258",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-windows-setup-preview",
+      "id": 11922133561,
+      "size_in_bytes": 312000905,
+      "archive_sha256": "sha256:d2f22e0b9f076a334dea2576c04f7f874bb8cd2e03c68bd09bdbef782ae8944c",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922133561",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-android-preview",
+      "id": 11922034212,
+      "size_in_bytes": 309786407,
+      "archive_sha256": "sha256:5a4a80ea6c6446a50d71548d8f4b55682991f384e324bc73f391001a6804aae5",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922034212",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-macos-arm64-pkg-preview",
+      "id": 11922008704,
+      "size_in_bytes": 317159763,
+      "archive_sha256": "sha256:ed577f31ccf59ba2751f11da4d75fd8da2429db6fe16bb6907fdc199112b52f2",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922008704",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-windows-test-reports",
+      "id": 11921908601,
+      "size_in_bytes": 110485,
+      "archive_sha256": "sha256:b1c200100d5e614c925c8471d81f988359a3a5f11257f3bab9e8b64fffd905f9",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11921908601",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-macos-x64-dmg-preview",
+      "id": 11921654414,
+      "size_in_bytes": 369450176,
+      "archive_sha256": "sha256:2895356598d4f464ee077c13e395cf1548426fa2bdb47a9df9dc5e80d69322a9",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11921654414",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-android-unsigned-release-review",
+      "id": 11921619467,
+      "size_in_bytes": 196777124,
+      "archive_sha256": "sha256:8c80062d433e4c60ad4a201882c3e3b92422d800d215926cdf675fe72621383f",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11921619467",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-macos-x64-test-reports",
+      "id": 11921564704,
+      "size_in_bytes": 110153,
+      "archive_sha256": "sha256:70dbc9927118ee0b2f9106fd6496d2f3537615d1b4dabe5ed76da0a78f1aa43a",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11921564704",
+      "expires_at": "2027-01-12T19:08:25Z"
+    },
+    {
+      "name": "podium-air-windows-msi-preview",
+      "id": 11921453857,
+      "size_in_bytes": 311628141,
+      "archive_sha256": "sha256:4ad105600fcce08229f6abc8ab96cb445613ee82ea617cc4135fe0f8eaf7788d",
+      "url": "https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11921453857",
+      "expires_at": "2027-01-12T19:08:25Z"
+    }
+  ]
+}

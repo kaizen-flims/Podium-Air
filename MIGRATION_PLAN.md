@@ -111,3 +111,11 @@ initialization testing must pass; inference equivalence is an additional release
 Remove two Android-only Vietnamese queue translation remnants; the active
 translations already live in sharedUi's Compose resource catalog. Source checks
 now reject any app-localized string without an Android default resource.
+
+## Final review status
+
+Android dev/unsigned production, Windows x64, macOS arm64 and macOS x64
+tests and preview packaging passed on code commit fdb459cd999da9a03858b40ba39c9e8043dce988.
+See VERIFICATION.md for CI/download links and the separate interactive, signing,
+migration and licensing checks still required before release. No release or main
+merge has been performed.

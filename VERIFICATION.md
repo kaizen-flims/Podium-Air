@@ -1,52 +1,93 @@
 # Verification status
 
-- PASS: local `python tools/verify_identity.py` (identity, XML resource uniqueness,
-  displayed resource branding and merge-marker checks).
-- PASS: local `git diff --check` after cleanup.
-- PASS (limited scan): no private-key/GitHub-token patterns in changed text files,
-  no added keystore/certificate files. This is not a comprehensive secret audit.
-- BLOCKED: local Gradle cannot download its distribution (`Network is unreachable`).
-  No Android APK, Windows installer or macOS distribution has built locally.
-- PENDING: preview CI; native packaging and unit tests must finish before claiming success.
-- NOT TESTED: device playback, lyrics, queue, cache/offline, Automix, account
-  sessions, media controls, desktop startup, signed Android data upgrades.
-- NOT PROVIDED: macOS signing or notarization. Any CI package is an unsigned preview.
+Code under review: `fdb459cd999da9a03858b40ba39c9e8043dce988`.
+Any following documentation-only commit does not change these tested sources.
 
-Preview workflow: `.github/workflows/platform-preview.yml`. It performs no
-publishing, signing, deployment or merge. See MIGRATION_PLAN.md for prerequisites.
+[Platform preview run 38621132271](https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271)
 
-## Inherited upstream test status and integration fixes
+| Platform | Unit tests / build | Packaging / identity | Status |
+|---|---|---|---|
+| Android | dev unit tests, dev APK, unsigned production/R8 APK | AAPT production/dev package and Podium label | PASS |
+| Windows x64 | shared, shared UI and desktop tests; EXE/MSI/app image | Podium launcher; native media/analyser DLLs and models; portable ZIP | PASS |
+| macOS arm64 | shared, shared UI and desktop tests; DMG/PKG/app | bundle ID; native analyser and models | PASS |
+| macOS x64 | same tests/packages; Intel model adapter | same bundle checks | PASS |
 
-At upstream SHA fe95bb6, Check run 38083493418 passed Windows, macOS, Linux
-and Go jobs, but Android failed 18 tests: missing Chinese language labels/
-regional locale declarations and one live Genius scrape. These are not Podium
-runtime validations. Podium run 38607316243 reached Kotlin compilation and found
-missing imports in retained FrostedTopBar; restored those imports.
 
-Add real translated Chinese language labels, declare zh-CN/zh-TW in Android
-locale config while retaining legacy zh, and make locale coverage tests use the
-actual Android resource qualifiers (zh and zh-rTW). The fixed Prem product
-credit is explicitly non-translatable. Python confirms coverage for all catalogs.
+## Review downloads
 
-The four deterministic Genius parser tests remain enabled. The live provider
-scrape is opt-in with RUN_LIVE_LYRICS_TESTS=true (preview workflow manual input
-run_live_lyrics_checks). Default CI reports it SKIPPED, not passed. Its network
-behavior remains unverified; provider availability must still be tested before release.
+GitHub artifact downloads contain a ZIP wrapper; extract the named APK/installer.
+These are preview artifacts, not published releases. Sign in to GitHub to download.
 
-## Completed initial Podium platform runs (source 1c0e392)
+- [Android dev APK (separate app ID)](https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922034212)
+- [Android unsigned production APK (review only)](https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11921619467)
+- [Windows x64 setup EXE](https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922133561)
+- [Apple Silicon macOS DMG](https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11922338367)
+- [Intel macOS DMG](https://github.com/kaizen-flims/Podium-Air/actions/runs/38621132271/artifacts/11921654414)
 
-- Android `assembleDevDebug`: PASS in run 38609296171, artifact 11917029477.
-- Windows shared/UI/desktop tests, EXE/MSI/app image and native/model packaging
-  checks: PASS in run 38609296204, artifact 11917851714.
-- macOS arm64 tests, DMG/PKG/app bundle, bundle ID and native/model checks: PASS
-  in run 38609296204, artifact 11918846708 (unsigned/unnotarized).
-- macOS x64: BLOCKED by DesktopBeatModelTest model loading (1 of 342 desktop
-  tests failed). Compilation/app-image creation alone is not a usable-build claim.
-- Android unit suite: 971 executed, 5 failed branding expectations, 1 live check
-  skipped. Update only the old BitChord scheme/vendor/error-text expectations;
-  keep their behavioral assertions. Recheck in the follow-up run.
+All formats, report artifacts, sizes, archive SHA-256 digests and expiry dates
+are recorded in `docs/upstream-integration/build-artifacts.json`. Those hashes
+identify the uploaded ZIP archives, not each extracted installer.
 
-Follow-up CI also validates an UNSIGNED Android production/R8 APK. It cannot
-be installed as an update; signing and real installed-user migration still require
-review. Per-format native artifacts avoid requiring a ~1 GB multi-format download.
-Desktop test failure logging includes the full assertion cause for Intel diagnosis.
+## Local checks
+
+- PASS: `python3 tools/verify_identity.py`: app IDs, updater destinations, internal
+  session/bridge identifiers, visible translated branding, XML resource uniqueness,
+  default resource coverage, conflict markers and desktop metadata.
+- PASS: `python3 tools/test_intel_beat_model.py`: actual source-model protobuf
+  round trip, deterministic conversion, unchanged unrelated graph fields and
+  original initializers, and exact effective integer weights for all four
+  adapted ConvInteger nodes. Original asset SHA-256 remains unchanged.
+- PASS: `git diff --check`.
+- PASS, LIMITED: no private-key/GitHub-token patterns in changed text files and
+  no added keystores/certificates. This is not a comprehensive secret audit.
+- BLOCKED LOCALLY: Gradle distribution network access, Android SDK and native
+  Windows/macOS environments. Builds above run on GitHub Actions, not locally.
+
+## Verification limits and release blockers
+
+- NOT TESTED interactively: startup/UI/artwork, playback, queue, offline/cache,
+  lyrics providers, Google/Spotify account sessions, desktop permissions and
+  media controls. Unit/native initialization tests do not establish these flows.
+- NOT TESTED: upgrade from the currently installed production Android app,
+  including existing database/preferences/cache/session continuity. Source IDs,
+  signing configuration and persisted keys are retained; real-device migration
+  needs a reviewed production-signed candidate.
+- NOT PROVIDED: production Android signing in preview CI. Its production APK is
+  unsigned and cannot update installed users. The dev APK uses a separate ID.
+- NOT PROVIDED: macOS signing/notarization or Windows publisher signing. Native
+  packages are previews; platform installation prompts are expected.
+- NOT CLEARED: provenance/distribution rights for existing Android fonts/models
+  and all bundled native/transitive components. New desktop SF Pro assets were
+  removed. Review THIRD_PARTY_NOTICES.md before public distribution.
+- NOT TESTED: full inference-output parity of the Intel-derived model, real-track
+  Automix quality and performance. Its integer weight equivalence is checked,
+  while the strict desktop test must also load the native analyser and ONNX model.
+- LIVE LYRICS: upstream's Genius network test is opt-in via
+  RUN_LIVE_LYRICS_TESTS=true / manual run_live_lyrics_checks. Default CI reports
+  one SKIPPED test. Four deterministic parser tests stay enabled. Provider
+  availability remains a release check.
+
+## Failures resolved during integration
+
+- Upstream Android Check run 38083493418 had 18 locale/live-network failures.
+  Corrected actual Chinese translations/platform locale qualifiers and separated
+  the opt-in network check; no blanket test disablement.
+- Restored retained Podium FrostedTopBar imports after CI compilation failure.
+- First Podium suite executed 971 tests, with five old branding expectations
+  failing and one live check skipped. Updated scheme/vendor/error expectations
+  to the intended Podium values while preserving behavioral assertions.
+- Upstream release run 38083493408 exposed six orphaned Chinese localized strings;
+  subsequent Podium release lint exposed two Vietnamese duplicates. Removed only
+  inactive Android remnants; active Compose translations remain. No lint baseline.
+- Intel ONNX 1.29 initialization failed. Intel-only 1.20 initialized but rejected
+  signed ConvInteger weights. Preserve original assets and use the mathematically
+  equivalent UINT8 weight/zero-point encoding described in MIGRATION_PLAN.md.
+- Removed the inherited model test's early return on missing native support,
+  which could otherwise report a false success. Full nested failures are logged.
+
+Earlier Android dev APK run 38609296171 succeeded. Windows and Apple Silicon
+packaging succeeded in runs 38609296204, 38613145225 and 38616090777; those old
+results are not substituted for the stricter final run above.
+
+The preview workflow has read-only repository permissions and no release,
+website deployment or merge steps. Default-branch release gates are unchanged.

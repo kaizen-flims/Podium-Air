@@ -70,6 +70,6 @@ Application ID `com.podium.air`, dev ID `com.podium.air.dev`, v1.0.1/code 2; sig
 
 ## Licenses and prerequisites
 
-Root LICENSE is GPLv3. Retain upstream copyright, source history and dependency legal notices. Binary asset provenance and third-party distribution rights (especially bundled SF Pro fonts, models, JavaFX, ONNX and FFmpeg codec binaries) need review before public release; copying assets does not establish permission. Desktop packaging currently uses SF Pro from upstream, subject to its own license; do not describe it as cleared.
+Root LICENSE is GPLv3. Retain upstream copyright, source history and dependency legal notices. Binary asset provenance and third-party distribution rights (especially bundled SF Pro fonts, models, JavaFX, ONNX and FFmpeg codec binaries) need review before public release; copying assets does not establish permission. The audited upstream desktop source includes SF Pro. This integration removes those new desktop font assets and uses system sans; pre-existing Android fonts still require provenance review.
 
 Android needs an SDK including upstream compileSdk and NDK, CMake, Gradle and JDK. Windows packaging needs Windows, JDK 21, CMake/MSVC (WinRT SMTC) and jpackage/WiX. macOS needs a native runner, JDK 21, CMake, bundled native dependency checks, and optional Apple signing/notarization credentials. This container has only JDK 17 and no detected Android SDK, Windows or macOS runtime. CI builds and interactive tests must be reported separately.
