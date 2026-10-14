@@ -1,6 +1,10 @@
 name: Android CI
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore: ['.github/workflows/desktop-release.yml']
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -120,67 +124,3 @@ jobs:
             --title 'Podium Air v1.0.2 — Android' --latest \
             --notes 'Podium Air v1.0.2 integrates upstream shared playback, queue, cache, lyrics and Automix improvements, Spotify library/import and download-cookie isolation. Prem completed personal Android testing. This APK uses the existing com.podium.air ID and verified Podium release certificate; install it over v1.0.1 without uninstalling. Existing-user migration has not been independently device-tested. Source, upstream credits and GPLv3 notices remain in this repository.'
 
-  publish-desktop:
-    needs: build-signed-release
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: read
-    steps:
-      - uses: actions/checkout@v4
-      - name: Confirm the tested desktop source and successful build
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          gh api repos/kaizen-flims/Podium-Air/actions/runs/38621132271 > tested-run.json
-          jq -e '.conclusion == "success" and .head_sha == "fdb459cd999da9a03858b40ba39c9e8043dce988"' tested-run.json
-      - uses: actions/download-artifact@v4
-        with:
-          github-token: ${{ github.token }}
-          run-id: 38621132271
-          artifact-ids: 11922133561,11921453857,11922253672,11922338367,11922008704,11922631631,11921654414,11922657216,11922274342
-          merge-multiple: true
-          path: desktop-release
-      - name: Publish Windows and macOS together, separately from Android
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          tag=desktop-v1.0.1-beta1
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo 'Desktop release already exists; leaving it unchanged.'
-            exit 0
-          fi
-          cd desktop-release
-          test "$(find . -maxdepth 1 -type f | wc -l)" -eq 9
-          for file in \
-            Podium-Air-1.0.1-beta1-windows-x64-setup.exe \
-            Podium-Air-1.0.1-beta1-windows-x64.msi \
-            Podium-Air-1.0.1-beta1-windows-x64-portable.zip \
-            Podium-Air-1.0.1-beta1-macos-arm64.dmg \
-            Podium-Air-1.0.1-beta1-macos-arm64.pkg \
-            Podium-Air-1.0.1-beta1-macos-arm64.zip \
-            Podium-Air-1.0.1-beta1-macos-x64.dmg \
-            Podium-Air-1.0.1-beta1-macos-x64.pkg \
-            Podium-Air-1.0.1-beta1-macos-x64.zip; do
-            test -s "$file"
-          done
-          sha256sum Podium-Air-* > SHA256SUMS.txt
-          cat > ../desktop-notes.md <<'NOTES'
-          First native Podium Air desktop beta, using the real upstream shared Kotlin/Compose implementation.
-
-          Windows: download the x64 setup EXE; MSI and portable ZIP are alternatives.
-          macOS: choose arm64 for Apple Silicon (M1 and newer), or x64 for Intel. Download the DMG; PKG and app ZIP are alternatives.
-
-          All platform unit tests, strict Automix native/model initialization and packaging checks passed in run 38621132271 at fdb459cd999da9a03858b40ba39c9e8043dce988. Interactive desktop playback/sign-in/media-control testing is still pending. Windows packages are unsigned; macOS packages are unsigned and unnotarized. This beta is separate from the stable Android update.
-
-          Podium Air branding and maintenance: Prem Das aka Kaizen. Derived from BitChord by Kushagra Singh and contributors. GPLv3 source, legal notices, provenance and verification limits are in the tagged repository and bundled notices. Existing Android font/model and native dependency distribution provenance remains under review.
-          NOTES
-          gh release create "$tag" Podium-Air-* SHA256SUMS.txt \
-            --target fdb459cd999da9a03858b40ba39c9e8043dce988 \
-            --title 'Podium Air Desktop v1.0.1 Beta 1 — Windows & macOS' \
-            --notes-file ../desktop-notes.md --prerelease --latest=false --draft
-          gh release edit "$tag" --draft=false --latest=false
