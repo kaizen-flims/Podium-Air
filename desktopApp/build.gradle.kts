@@ -147,6 +147,10 @@ dependencies {
 
 tasks.withType<Test> {
     systemProperty("java.awt.headless", "true")
+    testLogging {
+        events("failed", "skipped")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
 }
 
 kotlin {

@@ -32,3 +32,21 @@ The four deterministic Genius parser tests remain enabled. The live provider
 scrape is opt-in with RUN_LIVE_LYRICS_TESTS=true (preview workflow manual input
 run_live_lyrics_checks). Default CI reports it SKIPPED, not passed. Its network
 behavior remains unverified; provider availability must still be tested before release.
+
+## Completed initial Podium platform runs (source 1c0e392)
+
+- Android `assembleDevDebug`: PASS in run 38609296171, artifact 11917029477.
+- Windows shared/UI/desktop tests, EXE/MSI/app image and native/model packaging
+  checks: PASS in run 38609296204, artifact 11917851714.
+- macOS arm64 tests, DMG/PKG/app bundle, bundle ID and native/model checks: PASS
+  in run 38609296204, artifact 11918846708 (unsigned/unnotarized).
+- macOS x64: BLOCKED by DesktopBeatModelTest model loading (1 of 342 desktop
+  tests failed). Compilation/app-image creation alone is not a usable-build claim.
+- Android unit suite: 971 executed, 5 failed branding expectations, 1 live check
+  skipped. Update only the old BitChord scheme/vendor/error-text expectations;
+  keep their behavioral assertions. Recheck in the follow-up run.
+
+Follow-up CI also validates an UNSIGNED Android production/R8 APK. It cannot
+be installed as an update; signing and real installed-user migration still require
+review. Per-format native artifacts avoid requiring a ~1 GB multi-format download.
+Desktop test failure logging includes the full assertion cause for Intel diagnosis.

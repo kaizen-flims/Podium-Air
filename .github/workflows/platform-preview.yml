@@ -30,8 +30,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Verify preserved identity and resource integrity
         run: python3 tools/verify_identity.py
-      - name: Android unit tests and isolated preview APK
-        run: bash gradlew :app:testDevDebugUnitTest :app:assembleDevDebug --stacktrace
+      - name: Android tests, preview APK and unsigned release validation
+        run: bash gradlew :app:testDevDebugUnitTest :app:assembleDevDebug :app:assembleProdRelease --stacktrace
       - name: Verify APK application identity
         shell: bash
         run: |
@@ -40,12 +40,23 @@ jobs:
           "$aapt" dump badging "$apk" > apk-badging.txt
           grep -q "name='com.podium.air.dev'" apk-badging.txt
           grep -q 'Podium Air' apk-badging.txt
+          release_apk=$(find app/build/outputs/apk/prod/release -name '*unsigned.apk' | head -1)
+          "$aapt" dump badging "$release_apk" > release-apk-badging.txt
+          grep -q "name='com.podium.air'" release-apk-badging.txt
+          grep -q 'Podium Air' release-apk-badging.txt
       - uses: actions/upload-artifact@v4
         with:
           name: podium-air-android-preview
           path: |
             app/build/outputs/apk/dev/debug/*.apk
             apk-badging.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-android-unsigned-release-review
+          path: |
+            app/build/outputs/apk/prod/release/*unsigned.apk
+            release-apk-badging.txt
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
@@ -77,13 +88,23 @@ jobs:
           if (!($entries -match 'native/bitchord_analysis.dll')) { throw 'Missing Automix analyser' }
           if (!($entries -match 'models/.*\.onnx')) { throw 'Missing Automix models' }
           New-Item -ItemType Directory -Force dist | Out-Null
-          Copy-Item desktopApp/build/compose/binaries/main/msi/*.msi dist/
-          Copy-Item desktopApp/build/compose/binaries/main/exe/*.exe dist/
+          Copy-Item desktopApp/build/compose/binaries/main/msi/*.msi dist/Podium-Air-1.0.1-beta1-windows-x64.msi
+          Copy-Item desktopApp/build/compose/binaries/main/exe/*.exe dist/Podium-Air-1.0.1-beta1-windows-x64-setup.exe
           Compress-Archive -Path "$app/*" -DestinationPath 'dist/Podium-Air-1.0.1-beta1-windows-x64-portable.zip'
       - uses: actions/upload-artifact@v4
         with:
-          name: podium-air-windows-preview
-          path: dist/*
+          name: podium-air-windows-setup-preview
+          path: dist/*.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-windows-msi-preview
+          path: dist/*.msi
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-windows-portable-preview
+          path: dist/*.zip
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
@@ -130,8 +151,18 @@ jobs:
           ditto -c -k --keepParent "$app" "dist/Podium-Air-1.0.1-beta1-macos-$ARCH.zip"
       - uses: actions/upload-artifact@v4
         with:
-          name: podium-air-macos-${{ matrix.arch }}-preview
-          path: dist/*
+          name: podium-air-macos-${{ matrix.arch }}-dmg-preview
+          path: dist/*.dmg
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-macos-${{ matrix.arch }}-pkg-preview
+          path: dist/*.pkg
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-macos-${{ matrix.arch }}-app-preview
+          path: dist/*.zip
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
