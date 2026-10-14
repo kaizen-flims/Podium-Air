@@ -474,6 +474,12 @@ internal fun DesktopSignInDialog(
                     }
                 }
             }
+            Text(
+                "Made with love by Prem",
+                style = MaterialTheme.typography.labelSmall,
+                color = DesktopSecondary,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 10.dp),
+            )
         }
     }
 }

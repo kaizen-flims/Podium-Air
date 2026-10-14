@@ -29,7 +29,9 @@ class DesktopBeatModelTest {
                 session.inputNames.first()
             }
         }
-        outcome.exceptionOrNull()?.let { println("beat model load failed: ${it.message}") }
+        outcome.exceptionOrNull()?.let { failure ->
+            throw AssertionError("Automix beat model could not initialize", failure)
+        }
         assertTrue(
             outcome.isSuccess,
             "the beat model would not load, so Automix has no meter: ${outcome.exceptionOrNull()?.message}",

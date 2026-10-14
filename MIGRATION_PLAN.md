@@ -77,3 +77,20 @@ After the initial Android APK build succeeded, native follow-up CI jobs run
 independently so Intel diagnostics do not wait for Android R8 validation. Each
 platform still has its own tests, packaging checks and artifacts; none publishes
 releases. The initial Android-first verification order was completed.
+
+Intel-only ONNX adaptation: 1.29 failed Java SessionOptions initialization on the
+macos-15-intel runner, while Windows/arm64 passed. Test ONNX 1.20.0 only on
+macOS x64, the existing shared module API floor. Both supplied ONNX files were
+inspected directly: IR 8 and opset 17. Microsoft's compatibility table lists
+1.20 support through IR 10/opset 21:
+https://onnxruntime.ai/docs/reference/compatibility.html.
+This establishes model-format compatibility, not runtime success; retain the
+strict model-load test and full nested failure cause. Other platforms keep 1.29.
+Preview cache writes are enabled within branch/PR scope to avoid repeated cold
+native dependency downloads. Desktop sign-in retains the Prem credit.
+
+Android release lint: upstream release run 38083493408 failed on six orphaned
+Traditional Chinese translations (lyrics_original_title and its description)
+without default resources or source usages. Remove those obsolete localized
+entries; preserve actively used queue translations supplied by sharedUi. Do not
+suppress lint or introduce a baseline to hide the error.

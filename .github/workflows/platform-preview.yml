@@ -28,6 +28,8 @@ jobs:
           packages: platform-tools
           log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
       - name: Verify preserved identity and resource integrity
         run: python3 tools/verify_identity.py
       - name: Android tests, preview APK and unsigned release validation
@@ -73,6 +75,8 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
       - name: Tests and Windows packages
         shell: pwsh
         run: .\gradlew.bat :shared:jvmTest :sharedUi:jvmTest :desktopApp:test :desktopApp:packageMsi :desktopApp:packageExe :desktopApp:createDistributable --stacktrace
@@ -131,6 +135,8 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
       - name: Tests and unsigned macOS packages
         run: bash gradlew :shared:jvmTest :sharedUi:jvmTest :desktopApp:test :desktopApp:packageDmg :desktopApp:packagePkg :desktopApp:createDistributable --stacktrace
       - name: Verify bundle and collect packages

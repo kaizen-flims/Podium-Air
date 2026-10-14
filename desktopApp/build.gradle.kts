@@ -84,7 +84,10 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
 
     // Automix runs the same two models the Android build does.
-    implementation("com.microsoft.onnxruntime:onnxruntime:1.29.0")
+    // 1.29's Java runtime fails initialization on the Intel macOS runner.
+    // Match shared's 1.20 API floor there; both bundled models use IR 8/opset 17.
+    val onnxVersion = if (targetOs == "macos" && !isArm64) "1.20.0" else "1.29.0"
+    implementation("com.microsoft.onnxruntime:onnxruntime:$onnxVersion")
 
     // Decoding, resampling and demuxing for the audio engine.
     implementation("org.bytedeco:javacpp:$javacppVersion")
