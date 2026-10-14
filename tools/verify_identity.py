@@ -6,6 +6,8 @@ r = Path(__file__).resolve().parents[1]
 gradle = (r / 'app/build.gradle.kts').read_text()
 for value in ['applicationId = "com.podium.air"', 'applicationId = "com.podium.air.dev"', 'namespace = "com.music.bitchord"', 'versionCode = 2']:
     assert value in gradle, value
+assert 'private const val BRIDGE_NAME = "BitChordSpotifyTokenBridge"' in (r / 'app/src/main/java/com/music/bitchord/data/canvas/SpotifyToken.kt').read_text()
+assert 'const val SESSION_ID = "BitChordPlayback"' in (r / 'app/src/main/java/com/music/bitchord/playback/PlaybackService.kt').read_text()
 assert 'repos/kaizen-flims/Podium-Air/releases/latest' in (r / 'app/src/main/java/com/music/bitchord/data/AppUpdateChecker.kt').read_text()
 assert 'repos/kushagrasinghx/BitChord/releases/latest' not in (r / 'desktopApp/src/main/kotlin/com/music/bitchord/desktop/DesktopUpdateChecker.kt').read_text()
 for base in ['app/src/main/res', 'sharedUi/src/commonMain/composeResources', 'desktopApp/src/main/resources/strings']:
