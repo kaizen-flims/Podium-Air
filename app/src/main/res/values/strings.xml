@@ -1092,7 +1092,7 @@
 
     <string name="card_songs_format">%1$s songs</string>
 
-    <string name="made_with_love_by_prem">Made with ❤️ by Prem</string>
+    <string name="made_with_love_by_prem" translatable="false">Made with ❤️ by Prem</string>
     <string name="source_needs_lossless_output">Needs a lossless output · use a lossless supported device</string>
     <string name="source_needs_lossless_bt_codec">Needs a lossless output · Bluetooth is on %1$s; use a lossless supported device</string>
     <string name="source_needs_lossless_bt_unknown">Needs a lossless output · can’t tell which Bluetooth codec is in use</string>

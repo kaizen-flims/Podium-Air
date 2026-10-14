@@ -2,6 +2,11 @@ name: Podium Air platform previews
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      run_live_lyrics_checks:
+        description: Run external Genius provider checks (requires live network access)
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -9,6 +14,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   android:
+    env:
+      RUN_LIVE_LYRICS_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.run_live_lyrics_checks && 'true' || 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

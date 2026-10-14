@@ -14,7 +14,7 @@ record the pre-merge comparison. No production branch or other repository is cha
   name 1.0.1, signing configuration; accept upstream module dependencies.
   Version bump and release authorization remain a separate review decision.
 - `.github/workflows/android.yml`: retain Podium distribution/signing/certificate
-  validation and main-only release gates. Only change JDK from 17 to 21 because
+  validation and main-only release gates. Change JDK from 17 to 21 because
   configuration now resolves the desktop Java 21 toolchain; Android bytecode stays 17.
 - `README.md`: retain Podium README. Upstream build guide retained as DESKTOP.md
   pending product documentation cleanup; it describes upstream, not released Podium packages.
@@ -66,3 +66,9 @@ Local compilation cannot start: Gradle distribution download returned
 `java.net.SocketException: Network is unreachable`; local JDK is 17, no Android
 SDK or native Windows/macOS runtime is available. CI links/results are recorded
 in VERIFICATION.md when actually available. Do not infer successful builds.
+
+Follow-up CI fixes: obsolete SDK `tools` package removed; restored logo top-bar
+imports; debug job concurrency cancels superseded push/PR builds without changing
+the signed-release job. Corrected Chinese language labels and platform qualifiers
+exposed by upstream Android tests. Live external Genius checks are opt-in and
+must be reported separately from deterministic parser tests.
