@@ -576,4 +576,3 @@ class JamInviteLinkTest {
         assertEquals(ServerConnectionState.CustomOnline(25L), currentState)
     }
 }
-

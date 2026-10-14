@@ -317,7 +317,7 @@ object ArtistFacts {
         val cardAt: Long = 0L,
     )
 
-    private const val TAG = "BitChordArtists"
+    private const val TAG = "Podium AirArtists"
     private const val FILE_NAME = "artist_facts.json"
     private const val USER_AGENT = "PodiumAir/${BuildConfig.VERSION_NAME}"
     private const val MAX_NAME_LENGTH = 120

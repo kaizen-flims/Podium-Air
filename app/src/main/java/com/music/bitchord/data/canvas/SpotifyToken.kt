@@ -42,7 +42,7 @@ import java.util.Base64
 internal object SpotifyToken {
 
     private const val TAG = "SpotifyToken"
-    private const val BRIDGE_NAME = "BitChordSpotifyTokenBridge"
+    private const val BRIDGE_NAME = "Podium AirSpotifyTokenBridge"
     private const val HARVEST_TIMEOUT_MS = 20_000L
     private const val DEFAULT_TOKEN_LIFETIME_MS = 3_600_000L
 
@@ -64,6 +64,14 @@ internal object SpotifyToken {
 
     fun init(context: Context) {
         appContext = context.applicationContext
+    }
+
+    fun invalidate() {
+        cachedAccessToken = null
+        accessTokenExpiresAtMs = 0L
+        cachedClientId = null
+        cachedClientToken = null
+        clientTokenExpiresAtMs = 0L
     }
 
     /**
