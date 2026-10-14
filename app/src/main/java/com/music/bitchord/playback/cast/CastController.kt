@@ -27,7 +27,7 @@ import java.util.concurrent.Executors
  * Everything here is main-thread, like the router it wraps.
  */
 object CastController {
-    private const val TAG = "Podium AirCast"
+    private const val TAG = "BitChordCast"
 
     data class Device(
         val id: String,

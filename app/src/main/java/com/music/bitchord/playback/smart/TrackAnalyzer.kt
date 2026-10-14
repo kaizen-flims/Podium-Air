@@ -1283,7 +1283,7 @@ class TrackAnalyzer(private val context: Context, private val cache: AudioCache)
     }
 
     private companion object {
-        const val TAG = "Podium AirTrackAnalyzer"
+        const val TAG = "BitChordTrackAnalyzer"
 
         /**
          * What an unmeasured instant reads as. Below the policy's VOCAL_ACTIVE_THRESHOLD by
