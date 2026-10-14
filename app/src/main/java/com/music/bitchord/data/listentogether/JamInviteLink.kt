@@ -126,4 +126,3 @@ object JamInviteLink {
 
     private val INVITE_PATH = Regex("""/invite/([A-Za-z0-9]{${ListenTogether.CODE_LENGTH}})""")
 }
-

@@ -140,7 +140,8 @@ object AudioOutputStatus {
                 decoderName == other.decoderName &&
                 bufferSize == other.bufferSize &&
                 decoderOutputEncoding == other.decoderOutputEncoding &&
-                dspFormat == other.dspFormat &&
+                dspFormat == other.dspFormat &&
+
                 dspAvailable == other.dspAvailable &&
                 directUsbProbe == other.directUsbProbe &&
                 directSupport == other.directSupport &&
@@ -181,7 +182,8 @@ object AudioOutputStatus {
             result = 31 * result + (decoderName?.hashCode() ?: 0)
             result = 31 * result + (bufferSize ?: 0)
             result = 31 * result + (decoderOutputEncoding?.hashCode() ?: 0)
-            result = 31 * result + dspFormat.hashCode()
+            result = 31 * result + dspFormat.hashCode()
+
             result = 31 * result + dspAvailable.hashCode()
             result = 31 * result + (directUsbProbe?.hashCode() ?: 0)
             result = 31 * result + (directSupport?.hashCode() ?: 0)
@@ -331,7 +333,8 @@ object AudioOutputStatus {
             } else {
                 current.value.encodings
             },
-            bluetoothTelemetry = result.route.bluetoothTelemetry,
+            bluetoothProfile = if (result.route.kind == AudioRouting.Kind.BLUETOOTH) current.value.bluetoothProfile else null,
+            bluetoothTelemetry = if (result.route.kind == AudioRouting.Kind.BLUETOOTH) result.route.bluetoothTelemetry else null,
             fallbackReason = result.output.fallbackReason,
             fallbackDetail = result.output.fallbackDetail,
             systemMixerRateHz = result.output.systemMixerRateHz,
@@ -345,6 +348,21 @@ object AudioOutputStatus {
             // and left both rows reading "Float32" forever.
         )
         current.value = evaluateActualPath(baseSnapshot)
+    }
+
+    /**
+     * Resets track-specific statistics upon transition to a new track so the previous track's
+     * decoder name, encoding, loudness metrics, and exactness flags do not linger across track boundaries.
+     */
+    fun onTrackTransition() {
+        current.value = current.value.copy(
+            decoderName = null,
+            decoderOutputEncoding = null,
+            outputExact = false,
+            outputExactDetail = null,
+            loudnessGainDb = null,
+            loudnessLufs = null,
+        )
     }
 
     fun publishDecoder(decoderName: String?) {

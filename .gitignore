@@ -1,7 +1,9 @@
 # Gradle
 .gradle/
+.vscode/
 /build/
 /app/build/
+/desktopApp/bin/
 build/
 gradle-app.setting
 !gradle-wrapper.jar
@@ -41,3 +43,7 @@ keystore.properties
 
 # AI agent configuration
 AGENTS.md
+/output/
+
+# Python verification helpers
+__pycache__/

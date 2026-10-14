@@ -1,0 +1,180 @@
+name: Podium Air platform previews
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_live_lyrics_checks:
+        description: Run external Genius provider checks (requires live network access)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: platform-preview-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  android:
+    env:
+      RUN_LIVE_LYRICS_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.run_live_lyrics_checks && 'true' || 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+      - name: Verify preserved identity and resource integrity
+        run: |
+          python3 tools/verify_identity.py
+          python3 tools/test_intel_beat_model.py
+      - name: Android tests, preview APK and unsigned release validation
+        run: bash gradlew :app:testDevDebugUnitTest :app:assembleDevDebug :app:assembleProdRelease --stacktrace
+      - name: Verify APK application identity
+        shell: bash
+        run: |
+          aapt=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -1)
+          apk=$(find app/build/outputs/apk/dev/debug -name '*.apk' | head -1)
+          "$aapt" dump badging "$apk" > apk-badging.txt
+          grep -q "name='com.podium.air.dev'" apk-badging.txt
+          grep -q 'Podium Air' apk-badging.txt
+          release_apk=$(find app/build/outputs/apk/prod/release -name '*unsigned.apk' | head -1)
+          "$aapt" dump badging "$release_apk" > release-apk-badging.txt
+          grep -q "name='com.podium.air'" release-apk-badging.txt
+          grep -q 'Podium Air' release-apk-badging.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-android-preview
+          path: |
+            app/build/outputs/apk/dev/debug/*.apk
+            apk-badging.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-android-unsigned-release-review
+          path: |
+            app/build/outputs/apk/prod/release/*unsigned.apk
+            release-apk-badging.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: podium-air-android-test-reports
+          path: app/build/reports/tests/
+  windows:
+    if: ${{ always() && !cancelled() }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+      - name: Tests and Windows packages
+        shell: pwsh
+        run: .\gradlew.bat :shared:jvmTest :sharedUi:jvmTest :desktopApp:test :desktopApp:packageMsi :desktopApp:packageExe :desktopApp:createDistributable --stacktrace
+      - name: Collect portable app and verify native libraries
+        shell: pwsh
+        run: |
+          $app = 'desktopApp/build/compose/binaries/main/app/Podium Air'
+          if (!(Test-Path "$app/Podium Air.exe")) { throw 'Missing Podium Air launcher' }
+          $jar = Get-ChildItem "$app/app/desktopApp*.jar" | Select-Object -First 1
+          $entries = & jar tf $jar.FullName
+          if (!($entries -match 'native/bitchord_smtc.dll')) { throw 'Missing Windows media controls' }
+          if (!($entries -match 'native/bitchord_analysis.dll')) { throw 'Missing Automix analyser' }
+          if (!($entries -match 'models/.*\.onnx')) { throw 'Missing Automix models' }
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item desktopApp/build/compose/binaries/main/msi/*.msi dist/Podium-Air-1.0.1-beta1-windows-x64.msi
+          Copy-Item desktopApp/build/compose/binaries/main/exe/*.exe dist/Podium-Air-1.0.1-beta1-windows-x64-setup.exe
+          Compress-Archive -Path "$app/*" -DestinationPath 'dist/Podium-Air-1.0.1-beta1-windows-x64-portable.zip'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-windows-setup-preview
+          path: dist/*.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-windows-msi-preview
+          path: dist/*.msi
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-windows-portable-preview
+          path: dist/*.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: podium-air-windows-test-reports
+          path: |
+            desktopApp/build/reports/tests/
+            shared/build/reports/tests/
+            sharedUi/build/reports/tests/
+  macos:
+    if: ${{ always() && !cancelled() }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            arch: arm64
+          - os: macos-15-intel
+            arch: x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+      - name: Tests and unsigned macOS packages
+        run: bash gradlew :shared:jvmTest :sharedUi:jvmTest :desktopApp:test :desktopApp:packageDmg :desktopApp:packagePkg :desktopApp:createDistributable --stacktrace
+      - name: Verify bundle and collect packages
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          app='desktopApp/build/compose/binaries/main/app/Podium Air.app'
+          test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Contents/Info.plist")" = 'com.podium.air.desktop'
+          jar=$(find "$app/Contents/app" -name 'desktopApp*.jar' | head -1)
+          jar tf "$jar" > bundle-entries.txt
+          grep -q 'models/.*\.onnx' bundle-entries.txt
+          grep -q 'native/libbitchord_analysis.dylib' bundle-entries.txt
+          mkdir -p dist
+          cp desktopApp/build/compose/binaries/main/dmg/*.dmg "dist/Podium-Air-1.0.1-beta1-macos-$ARCH.dmg"
+          cp desktopApp/build/compose/binaries/main/pkg/*.pkg "dist/Podium-Air-1.0.1-beta1-macos-$ARCH.pkg"
+          ditto -c -k --keepParent "$app" "dist/Podium-Air-1.0.1-beta1-macos-$ARCH.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-macos-${{ matrix.arch }}-dmg-preview
+          path: dist/*.dmg
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-macos-${{ matrix.arch }}-pkg-preview
+          path: dist/*.pkg
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-macos-${{ matrix.arch }}-app-preview
+          path: dist/*.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: podium-air-macos-${{ matrix.arch }}-test-reports
+          path: |
+            desktopApp/build/reports/tests/
+            shared/build/reports/tests/
+            sharedUi/build/reports/tests/

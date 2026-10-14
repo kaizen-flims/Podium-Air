@@ -17,18 +17,6 @@ enum class WebSessionMode {
 }
 
 /**
- * Value accepted by Innertube as `context.user.onBehalfOfUser`.
- * YouTube commonly exposes `DATASYNC_ID` as `account||delegated`; the second
- * half is the active identity, while plain accounts can leave it empty.
- */
-internal fun normalizeDataSyncId(raw: String?): String? {
-    val value = raw?.takeIf { it.isNotBlank() } ?: return null
-    if (!value.contains("||")) return value
-    return value.substringAfter("||").takeIf { it.isNotBlank() }
-        ?: value.substringBefore("||").takeIf { it.isNotBlank() }
-}
-
-/**
  * A session lifted out of the in-app browser: the cookie, plus who the page
  * being looked at says it is.
  *
@@ -83,7 +71,7 @@ object BrowserSession {
     fun installGoogleCookies(cookieHeader: String) {
         clearGoogleCookies()
         val manager = runCatching { CookieManager.getInstance() }.getOrElse {
-            Log.w("BitChord", "no cookie manager to restore: ${it.message}")
+            Log.w("Podium Air", "no cookie manager to restore: ${it.message}")
             return
         }
         val entries = cookieHeader.split(';').mapNotNull { entry ->
@@ -95,7 +83,7 @@ object BrowserSession {
             entries.forEach { cookie -> manager.setCookie(origin, cookie) }
         }
         runCatching { manager.flush() }
-        Log.d("BitChord", "restored ${entries.size} browser cookies for the selected account")
+        Log.d("Podium Air", "restored ${entries.size} browser cookies for the selected account")
     }
 
     /**
@@ -113,7 +101,7 @@ object BrowserSession {
         // a reason for the next sign-in to be less convenient, not a reason for
         // signing out to crash.
         val manager = runCatching { CookieManager.getInstance() }.getOrElse {
-            Log.w("BitChord", "no cookie manager to clear: ${it.message}")
+            Log.w("Podium Air", "no cookie manager to clear: ${it.message}")
             return
         }
         var cleared = 0
@@ -133,7 +121,7 @@ object BrowserSession {
             }
         }
         runCatching { manager.flush() }
-        Log.d("BitChord", "cleared $cleared browser cookies for Google")
+        Log.d("Podium Air", "cleared $cleared browser cookies for Google")
     }
 
     private val GOOGLE_ORIGINS = listOf(
