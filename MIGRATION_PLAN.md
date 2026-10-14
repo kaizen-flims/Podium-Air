@@ -72,3 +72,8 @@ imports; debug job concurrency cancels superseded push/PR builds without changin
 the signed-release job. Corrected Chinese language labels and platform qualifiers
 exposed by upstream Android tests. Live external Genius checks are opt-in and
 must be reported separately from deterministic parser tests.
+
+After the initial Android APK build succeeded, native follow-up CI jobs run
+independently so Intel diagnostics do not wait for Android R8 validation. Each
+platform still has its own tests, packaging checks and artifacts; none publishes
+releases. The initial Android-first verification order was completed.

@@ -64,7 +64,6 @@ jobs:
           name: podium-air-android-test-reports
           path: app/build/reports/tests/
   windows:
-    needs: android
     if: ${{ always() && !cancelled() }}
     runs-on: windows-latest
     steps:
@@ -115,7 +114,6 @@ jobs:
             shared/build/reports/tests/
             sharedUi/build/reports/tests/
   macos:
-    needs: android
     if: ${{ always() && !cancelled() }}
     strategy:
       fail-fast: false
