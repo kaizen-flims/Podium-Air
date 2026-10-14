@@ -31,7 +31,9 @@ jobs:
         with:
           cache-read-only: false
       - name: Verify preserved identity and resource integrity
-        run: python3 tools/verify_identity.py
+        run: |
+          python3 tools/verify_identity.py
+          python3 tools/test_intel_beat_model.py
       - name: Android tests, preview APK and unsigned release validation
         run: bash gradlew :app:testDevDebugUnitTest :app:assembleDevDebug :app:assembleProdRelease --stacktrace
       - name: Verify APK application identity

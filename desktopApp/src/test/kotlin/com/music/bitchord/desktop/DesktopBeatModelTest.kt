@@ -13,10 +13,10 @@ class DesktopBeatModelTest {
     @Test
     fun `the beat model loads in this build`() {
         DesktopAnalysisRuntime.ensureStarted()
-        if (!DesktopAnalysisRuntime.available) {
-            println("analysis library unavailable — skipping")
-            return
-        }
+        assertTrue(
+            DesktopAnalysisRuntime.available,
+            "Automix native analysis failed to initialize in this packaged build",
+        )
         val model = File(DesktopAnalysisRuntime.modelPath(BeatTracker.MODEL_ASSET))
         assertTrue(model.isFile && model.length() > 0, "the model was not unpacked")
 

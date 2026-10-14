@@ -18,6 +18,17 @@ for base in ['app/src/main/res', 'sharedUi/src/commonMain/composeResources', 'de
         assert len(names) == len(set(names)), f'Duplicate strings: {p}'
         for s in strings:
             assert 'bitchord' not in ''.join(s.itertext()).lower(), f'Product branding: {p}:{s.attrib["name"]}'
+# Compose resource assets have their own catalog. Android app translations
+# must have defaults in the Android app resource set, not just in Compose assets.
+android_res = r / 'app/src/main/res'
+default_names = {
+    entry.attrib['name']
+    for file in (android_res / 'values').glob('*.xml')
+    for entry in ET.parse(file).getroot().findall('string')
+}
+for file in android_res.glob('values*/strings.xml'):
+    names = {entry.attrib['name'] for entry in ET.parse(file).getroot().findall('string')}
+    assert not names - default_names, f'Orphan Android translations: {file}: {names - default_names}'
 for p in r.rglob('*.kt'):
     assert not re.search(r'^<<<<<<<|^=======|^>>>>>>>', p.read_text(), re.M), p
 metadata = (r / 'desktopApp/build.gradle.kts').read_text()

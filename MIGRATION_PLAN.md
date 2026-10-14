@@ -94,3 +94,20 @@ Traditional Chinese translations (lyrics_original_title and its description)
 without default resources or source usages. Remove those obsolete localized
 entries; preserve actively used queue translations supplied by sharedUi. Do not
 suppress lint or introduce a baseline to hide the error.
+
+Intel runtime verification exposed a second issue: ONNX 1.20 initializes, but
+its CPU ConvInteger kernel supports UINT8 weights only, whereas the supplied
+Beat This model uses signed INT8 weights on four frontend convolutions. Keep
+upstream source models untouched. tools/intel_beat_model.py produces an Intel-only
+build asset: shift signed weight and weight zero-point representations by 128,
+then rebind those four nodes. The effective integer weight (w-z) is exactly
+unchanged for every actual stored value; all scales, operations, other consumers
+and original initializers remain. Activations are verified to come from
+DynamicQuantizeLinear (UINT8). Produce source/derived SHA-256 provenance.
+The original vocal model has no ConvInteger nodes and is unchanged. Models for
+Android, Windows and Apple Silicon remain the original assets. Strict native/model
+initialization testing must pass; inference equivalence is an additional release check.
+
+Remove two Android-only Vietnamese queue translation remnants; the active
+translations already live in sharedUi's Compose resource catalog. Source checks
+now reject any app-localized string without an Android default resource.

@@ -362,8 +362,29 @@ val buildWindowNative by tasks.registering {
     }
 }
 
+// The older Intel macOS CPU runtime accepts UINT8 ConvInteger weights.
+// Re-encode only their zero-point representation, preserving effective weights.
+val intelBeatModelDir = layout.buildDirectory.dir("models-intel")
+val prepareIntelBeatModel by tasks.registering {
+    val source = rootProject.file("app/src/main/assets/beat_this_int8.onnx")
+    val adapter = rootProject.file("tools/intel_beat_model.py")
+    inputs.files(source, adapter)
+    outputs.dir(intelBeatModelDir)
+    onlyIf { targetOs == "macos" && !isArm64 }
+    doLast {
+        providers.exec {
+            commandLine(
+                findOnPath("python3")?.absolutePath ?: "python3",
+                adapter.absolutePath,
+                source.absolutePath,
+                intelBeatModelDir.get().file("beat_this_int8.onnx").asFile.absolutePath,
+            )
+        }.result.get().assertNormalExitValue()
+    }
+}
+
 tasks.named<ProcessResources>("processResources") {
-    dependsOn(buildAnalysisNative, buildWindowNative)
+    dependsOn(buildAnalysisNative, buildWindowNative, prepareIntelBeatModel)
     from(analysisNativeDir) {
         include("*.so", "*.dll", "*.dylib")
         into("native")
@@ -375,7 +396,14 @@ tasks.named<ProcessResources>("processResources") {
     // The Automix models, taken from the Android module rather than copied into this one.
     from(rootProject.file("app/src/main/assets")) {
         include("*.onnx")
+        if (targetOs == "macos" && !isArm64) exclude("beat_this_int8.onnx")
         into("models")
+    }
+    if (targetOs == "macos" && !isArm64) {
+        from(intelBeatModelDir) {
+            include("*.onnx", "*.provenance.json")
+            into("models")
+        }
     }
 }
 
