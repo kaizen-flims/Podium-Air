@@ -16,7 +16,7 @@ Android relies on shared and sharedUi, so their matching changes are included. D
 
 Production application ID, version, signing configuration, default launcher assets, existing credits/Prem attribution and notices are preserved. Existing Podium resource keys and Discord identity/fallback art remain compatible. Newly introduced visible strings use the existing Podium Air name. Upstream icon variants are replaced by exactly the three approved Podium Air choices.
 
-Branding approved by Prem in the follow-up device audit: use the exact uploaded Original, Liquid Glass and Chrome assets; Original stays the launcher default. The upper duplicate Home mark is removed, its remaining Chrome mark is enlarged, and the Library header/card marks are enlarged. Launcher selection is independent of the in-app Chrome mark. Existing credits remain untouched. Android-only shared resource selection preserves desktop branding. Audit suffix: `-audit2-v1.8.1-branding3`.
+Branding approved by Prem in the follow-up device audit: use the exact uploaded Original, Liquid Glass and Chrome assets; Original stays the launcher default. The upper duplicate Home mark is removed, its remaining Chrome mark is enlarged, and the Library header/card marks are enlarged. Launcher selection is independent of the in-app Chrome mark. Existing credits remain untouched. Android-only shared resource selection preserves desktop branding. Audit suffix: `-audit2-v1.8.1-branding4`.
 
 ## Install beside production
 

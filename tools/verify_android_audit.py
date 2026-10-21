@@ -58,7 +58,20 @@ for name in ("app/src/main/res/drawable-nodpi/podium_air_ui_mono.png", "app/src/
 original = next(e for e in aliases if e.get(android + "name") == ".LauncherOriginal")
 assert original.get(android + "icon") == "@mipmap/ic_launcher_original"
 assert manifest.find("application").get(android + "icon") == "@mipmap/ic_launcher_original"
-foreground = (ROOT / "app/src/main/res/drawable/podium_original_launcher_foreground.xml").read_text()
-assert ET.fromstring(foreground).find("bitmap").get(android + "src") == "@drawable/podium_icon_original"
-assert '@drawable/podium_liquid_glass_trimmed' in (ROOT / "app/src/main/res/drawable/podium_glass_launcher_foreground.xml").read_text()
-print("Independent red Original launcher, borderless glass and transparent Chrome verified")
+# All launchers use production's original canvas transform, including Chrome.
+# A legacy bitmap launcher is padded again by Android and makes the Chrome mark small.
+production_foreground = ET.parse(ROOT / "app/src/main/res/drawable/podium_air_launcher_foreground.xml").getroot()
+for variant, foreground_name, source in (
+    ("original", "original", "podium_icon_original"),
+    ("liquid_glass", "glass", "podium_icon_liquid_glass"),
+    ("chrome", "chrome", "podium_icon_chrome"),
+):
+    icon = ET.parse(ROOT / f"app/src/main/res/mipmap-anydpi/ic_launcher_{variant}.xml").getroot()
+    assert icon.tag == "adaptive-icon"
+    assert icon.find("foreground").get(android + "drawable") == f"@drawable/podium_{foreground_name}_launcher_foreground"
+    foreground = ET.parse(ROOT / f"app/src/main/res/drawable/podium_{foreground_name}_launcher_foreground.xml").getroot()
+    assert foreground.tag == production_foreground.tag
+    assert foreground.get(android + "drawable") == f"@drawable/{source}"
+    for edge in ("Left", "Top", "Right", "Bottom"):
+        assert foreground.get(android + "inset" + edge) == production_foreground.get(android + "inset" + edge) == "9dp"
+print("Original production launcher geometry and consistent adaptive variants verified")

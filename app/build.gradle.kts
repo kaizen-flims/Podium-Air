@@ -187,7 +187,7 @@ android {
         create("audit") {
             initWith(getByName("release"))
             applicationIdSuffix = ".audit2"
-            versionNameSuffix = "-audit2-v1.8.1-branding3"
+            versionNameSuffix = "-audit2-v1.8.1-branding4"
             signingConfig = signingConfigs.getByName("audit")
             matchingFallbacks += listOf("release")
             resValue("string", "app_name", "Podium Air Audit 2")
