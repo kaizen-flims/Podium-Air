@@ -52,21 +52,7 @@ val listenTogetherServer: String = (
         ?: "https://bitchord-listen-together.onrender.com"
     ).trim().trimEnd('/')
 
-/*
- * Bump this by hand before cutting each sideloaded test build ("beta2",
- * "beta3", ...) and blank it out before cutting the real release. Marks the
- * versionName below as a pre-release: AppUpdateChecker.isNewer() treats any
- * "-suffix" as older than a clean release of the same number, so testers
- * still get the update prompt once the matching tag is actually published.
- *
- * Applied to release builds as well as debug ones, and that is the whole
- * point of it. A sideloaded beta is a *release* build — signed with the real
- * key, installed over the real package — so leaving the marker off it is
- * exactly the case that strands a tester: their build calls itself 1.6.1,
- * the published 1.6.1 then matches it, isNewer() says no, and no prompt ever
- * comes. Blanking this line is the one step that turns a beta into a release,
- * so it is the one place to get right.
- */
+// Keep the current production version until the audited update is approved.
 val betaSuffix = ""
 
 android {
@@ -93,6 +79,11 @@ android {
             "LISTEN_TOGETHER_SERVER",
             "\"${listenTogetherServer.replace("\\", "\\\\").replace("\"", "\\\"")}\"",
         )
+        // Which release assets are this app's: the phone and TV APKs ship in
+        // the same GitHub release, told apart by file name. See
+        // AppUpdateChecker.apkAssetUrl.
+        buildConfigField("String", "UPDATE_APK_PREFIX", "\"Podium-Air-\"")
+        buildConfigField("boolean", "IS_AUDIT", "false")
     }
 
     splits {
@@ -184,6 +175,16 @@ android {
          * build is interpreted and verified at runtime and says little about
          * either. `./gradlew installDevBenchmark`.
          */
+        // Release-like audit build: independent package, private data and signing key.
+        create("audit") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".audit"
+            versionNameSuffix = "-audit-v1.8.1"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            resValue("string", "app_name", "Podium Air Audit")
+            buildConfigField("boolean", "IS_AUDIT", "true")
+        }
         create("benchmark") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
@@ -199,6 +200,8 @@ android {
         resources {
             // SMBJ's BouncyCastle and jspecify both ship this descriptor.
             excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+            // The three BouncyCastle jars (bcprov, bcutil, bcpkix) ship one licence between them.
+            pickFirsts += setOf("META-INF/LICENSE.md", "META-INF/LICENSE.txt", "META-INF/NOTICE.md")
         }
     }
     buildFeatures {
@@ -317,6 +320,9 @@ dependencies {
     // ---- Images: Coil 3 + Palette (dominant colors for the mesh gradient) ----
     implementation("io.coil-kt.coil3:coil-compose:3.0.4")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
+    // Title logos are PNG, but artist signatures are usually SVG — without
+    // this Coil can't decode them (see ArtistSignatureRepository).
+    implementation("io.coil-kt.coil3:coil-svg:3.0.4")
     implementation("androidx.palette:palette-ktx:1.0.0")
 
     // ---- Frosted glass / progressive blur (Telegram-style bars) ----
@@ -397,6 +403,25 @@ dependencies {
     // turn into a real stream — see [com.music.bitchord.playback.cast.CastPlayback].
     implementation("com.google.android.gms:play-services-cast-framework:22.2.0")
     implementation("androidx.mediarouter:mediarouter:1.8.1")
+
+    // ---- The watch app (wearos/): Data Layer state out, commands in ----
+    // See com.music.bitchord.wear.WearBridge. Rides on the Play services base
+    // the Cast framework already brings, so it adds very little.
+    implementation("com.google.android.gms:play-services-wearable:20.0.1")
+    // Opens the watch app after an update, so its install prompt is on screen.
+    implementation("androidx.wear:wear-remote-interactions:1.1.0")
+
+    // ---- "BitChord for Wear OS": the first install onto a watch ----
+    // Without the Play Store only ADB can install on a watch, so this phone is
+    // the ADB client, over the watch's Wireless debugging — see WatchInstaller.
+    // GPL-3.0/Apache-2.0 dual-licensed. Its own BouncyCastle (jdk15to18) is the
+    // same classes as the jdk18on one SMBJ already brings, so it is excluded;
+    // bcpkix supplies the certificate the ADB client identifies itself with.
+    implementation("com.github.MuntashirAkon:libadb-android:3.1.1") {
+        exclude(group = "org.bouncycastle")
+    }
+    implementation("org.conscrypt:conscrypt-android:2.5.3")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.85")
 
     testImplementation("junit:junit:4.13.2")
     // A real HTTP server for the addon tests. The addon protocol is entirely
