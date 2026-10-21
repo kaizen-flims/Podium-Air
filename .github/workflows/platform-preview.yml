@@ -30,28 +30,21 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: false
-      - name: Restore separate audit signing key
+      - name: Restore persistent separate audit signing key
+        id: audit-signing-key
         uses: actions/cache@v4
         with:
           path: ~/.android/debug.keystore
           key: podium-air-android-audit-signing-v1
-      - name: Create audit signing key when absent
-        shell: bash
-        run: |
-          mkdir -p "$HOME/.android"
-          if [ ! -f "$HOME/.android/debug.keystore" ]; then
-            keytool -genkeypair -noprompt -keystore "$HOME/.android/debug.keystore" \
-              -storepass android -keypass android -alias androiddebugkey \
-              -dname 'CN=Podium Air Audit,O=Podium Air,C=IN' \
-              -keyalg RSA -keysize 2048 -validity 10000
-          fi
-      - name: Verify audit key matches the installed audit app
+          fail-on-cache-miss: true
+      - name: Verify persistent audit signing key
         shell: bash
         run: |
           set -euo pipefail
-          fingerprint=$(keytool -exportcert -keystore "$HOME/.android/debug.keystore" \
-            -storepass android -alias androiddebugkey | sha256sum | cut -d ' ' -f 1)
-          test "$fingerprint" = 'bc7867e27309d18b4747c2f140955afc0537a8cd159af808e8e831e19b433d2d'
+          test -s "$HOME/.android/debug.keystore"
+          keytool -exportcert -keystore "$HOME/.android/debug.keystore" \
+            -storepass android -alias androiddebugkey > audit-certificate.der
+          sha256sum audit-certificate.der | cut -d ' ' -f 1 > audit-expected-certificate.txt
       - name: Verify preserved identity and resource integrity
         run: |
           python3 tools/verify_identity.py
@@ -76,18 +69,18 @@ jobs:
           apk=$(find app/build/outputs/apk/prod/audit -name '*universal*.apk' | head -1)
           test -n "$apk"
           "$aapt" dump badging "$apk" > audit-apk-badging.txt
-          grep -Fq "package: name='com.podium.air.audit'" audit-apk-badging.txt
-          grep -Fq "application-label:'Podium Air Audit'" audit-apk-badging.txt
+          grep -Fq "package: name='com.podium.air.audit2'" audit-apk-badging.txt
+          grep -Fq "application-label:'Podium Air Audit 2'" audit-apk-badging.txt
           "$apksigner" verify --print-certs "$apk" > audit-signing-verification.txt
-          grep -Fqi 'bc7867e27309d18b4747c2f140955afc0537a8cd159af808e8e831e19b433d2d' audit-signing-verification.txt
+          grep -Fqi "$(cat audit-expected-certificate.txt)" audit-signing-verification.txt
           if grep -Fqi 'fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2' audit-signing-verification.txt; then
             echo 'Audit APK must never use the production signing certificate'
             exit 1
           fi
           "$aapt" dump xmltree "$apk" AndroidManifest.xml > audit-manifest.txt
-          grep -Fq 'com.podium.air.audit.fileprovider' audit-manifest.txt
+          grep -Fq 'com.podium.air.audit2.fileprovider' audit-manifest.txt
           mkdir -p dist/android-audit
-          cp "$apk" dist/android-audit/Podium-Air-Audit-v1.8.1.apk
+          cp "$apk" dist/android-audit/Podium-Air-Audit-2-v1.8.1.apk
           sha256sum dist/android-audit/*.apk > dist/android-audit/SHA256SUMS.txt
           cp audit-apk-badging.txt audit-signing-verification.txt audit-manifest.txt dist/android-audit/
       - uses: actions/upload-artifact@v4

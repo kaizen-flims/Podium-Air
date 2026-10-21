@@ -186,11 +186,11 @@ android {
         // Release-like audit build: independent package, private data and signing key.
         create("audit") {
             initWith(getByName("release"))
-            applicationIdSuffix = ".audit"
-            versionNameSuffix = "-audit-v1.8.1-branding2"
+            applicationIdSuffix = ".audit2"
+            versionNameSuffix = "-audit2-v1.8.1-branding2"
             signingConfig = signingConfigs.getByName("audit")
             matchingFallbacks += listOf("release")
-            resValue("string", "app_name", "Podium Air Audit")
+            resValue("string", "app_name", "Podium Air Audit 2")
             buildConfigField("boolean", "IS_AUDIT", "true")
         }
         create("benchmark") {
