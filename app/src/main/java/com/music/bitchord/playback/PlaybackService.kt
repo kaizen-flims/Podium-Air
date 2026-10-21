@@ -6749,8 +6749,9 @@ class PlaybackService : MediaLibraryService() {
                 x = AppSettings.equalizerToneX.value,
                 y = AppSettings.equalizerToneY.value,
                 focused = AppSettings.equalizerFocused.value,
+                peakLimited = true,
             )
-            EqualizerMode.MANUAL -> manualCurve(AppSettings.equalizerBands.value)
+            EqualizerMode.MANUAL -> manualCurve(AppSettings.equalizerBands.value, peakLimited = true)
         }
         val balance = AppSettings.equalizerBalance.value
         equalizerProcessorA.setTuning(enabled, curve, balance)

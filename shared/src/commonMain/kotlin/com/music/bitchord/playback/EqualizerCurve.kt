@@ -90,16 +90,9 @@ class EqCurve(
     val gainsDb: FloatArray,
     val qs: FloatArray,
     /**
-     * Make-up attenuation, always at or below zero: half of however far the
-     * curve's loudest point was pushed up.
-     *
-     * Half rather than all of it. Taking the whole boost back assumes the
-     * music has full-scale content sitting exactly on the boosted frequency,
-     * which almost nothing does, and the price of that assumption was every
-     * boost reading as "the track got quieter" — a +6 dB bass lift left the
-     * bass where it was and turned everything else down 6 dB. The overs the
-     * remaining half lets through are rare and brief, and [PeakLimiter] takes
-     * them instead.
+     * Make-up attenuation, at or below zero. Defaults to full compensation for
+     * existing hosts. Android explicitly selects partial compensation because
+     * its audio chain has a PeakLimiter; hosts without one must keep full headroom.
      */
     val preampDb: Float,
 ) {
@@ -107,13 +100,13 @@ class EqCurve(
         val FLAT = of(FloatArray(EqLayout.SLOTS), FloatArray(EqLayout.SLOTS) { 0.707f })
 
         /** Builds a curve and works out the attenuation it needs. */
-        fun of(gainsDb: FloatArray, qs: FloatArray): EqCurve =
-            EqCurve(gainsDb, qs, preampFor(gainsDb, qs))
+        fun of(gainsDb: FloatArray, qs: FloatArray, peakLimited: Boolean = false): EqCurve =
+            EqCurve(gainsDb, qs, preampFor(gainsDb, qs, peakLimited))
     }
 }
 
 /** The seven sliders, as a curve. Slots the tone pad owns stay flat. */
-fun manualCurve(bandsDb: List<Float>): EqCurve {
+fun manualCurve(bandsDb: List<Float>, peakLimited: Boolean = false): EqCurve {
     val gains = FloatArray(EqLayout.SLOTS)
     val qs = FloatArray(EqLayout.SLOTS) { 0.707f }
     for (band in 0 until EqLayout.MANUAL_COUNT) {
@@ -121,7 +114,7 @@ fun manualCurve(bandsDb: List<Float>): EqCurve {
             bandsDb.getOrElse(band) { 0f }.coerceIn(-EqLayout.MANUAL_RANGE_DB, EqLayout.MANUAL_RANGE_DB)
         qs[EqLayout.MANUAL_FIRST + band] = EqLayout.MANUAL_Q
     }
-    return EqCurve.of(gains, qs)
+    return EqCurve.of(gains, qs, peakLimited)
 }
 
 /**
@@ -138,7 +131,7 @@ fun manualCurve(bandsDb: List<Float>): EqCurve {
  * description of bandwidth and nothing else, so that is the only thing it
  * changes.
  */
-fun toneCurve(x: Int, y: Int, focused: Boolean): EqCurve {
+fun toneCurve(x: Int, y: Int, focused: Boolean, peakLimited: Boolean = false): EqCurve {
     val gains = FloatArray(EqLayout.SLOTS)
     val qs = FloatArray(EqLayout.SLOTS) { 0.707f }
     val steps = EqLayout.TONE_STEPS
@@ -154,11 +147,12 @@ fun toneCurve(x: Int, y: Int, focused: Boolean): EqCurve {
     qs[EqLayout.TONE_LOW] = shelfQ
     qs[EqLayout.TONE_HIGH] = shelfQ
     qs[EqLayout.TONE_MID] = bellQ
-    return EqCurve.of(gains, qs)
+    return EqCurve.of(gains, qs, peakLimited)
 }
 
 /**
- * How far down the curve is pulled: [MAKEUP_FRACTION] of its peak boost.
+ * Full headroom by default; [MAKEUP_FRACTION] of the peak boost only when the host
+ * explicitly supplies a peak limiter.
  *
  * Taking the largest single band gain would under-read it: the bands overlap,
  * so two neighbours at +6 dB are worth more than +6 dB between them. This walks
@@ -166,7 +160,7 @@ fun toneCurve(x: Int, y: Int, focused: Boolean): EqCurve {
  * decibels add — and takes its actual peak. Runs on whoever changed the
  * setting, never on the audio thread.
  */
-private fun preampFor(gainsDb: FloatArray, qs: FloatArray): Float {
+private fun preampFor(gainsDb: FloatArray, qs: FloatArray, peakLimited: Boolean): Float {
     var peak = 0f
     for (point in 0 until RESPONSE_POINTS) {
         val hz = responseFrequency(point)
@@ -176,7 +170,7 @@ private fun preampFor(gainsDb: FloatArray, qs: FloatArray): Float {
         }
         if (sum > peak) peak = sum
     }
-    return -peak * MAKEUP_FRACTION
+    return -peak * if (peakLimited) MAKEUP_FRACTION else 1f
 }
 
 /** Log-spaced across the audible band: 20 Hz to 20 kHz. */

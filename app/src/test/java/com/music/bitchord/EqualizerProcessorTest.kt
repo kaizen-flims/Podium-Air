@@ -6,8 +6,8 @@ import com.music.bitchord.playback.EqLayout
 import com.music.bitchord.playback.EqualizerPreset
 import com.music.bitchord.playback.EqualizerProcessor
 import com.music.bitchord.playback.PeakLimiter
-import com.music.bitchord.playback.manualCurve
-import com.music.bitchord.playback.toneCurve
+import com.music.bitchord.playback.manualCurve as sharedManualCurve
+import com.music.bitchord.playback.toneCurve as sharedToneCurve
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.PI
@@ -19,6 +19,11 @@ import kotlin.math.sqrt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+
+// Match Android's explicit limiter-backed policy; keep all signal assertions unchanged.
+private fun manualCurve(bandsDb: List<Float>) = sharedManualCurve(bandsDb, peakLimited = true)
+private fun toneCurve(x: Int, y: Int, focused: Boolean) =
+    sharedToneCurve(x, y, focused, peakLimited = true)
 
 /**
  * What the equaliser actually does to a signal.
