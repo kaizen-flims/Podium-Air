@@ -63,31 +63,40 @@ jobs:
       - name: Verify audit APK identity and independent certificate
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           apksigner=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
           aapt="$(dirname "$apksigner")/aapt"
           apk=$(find app/build/outputs/apk/prod/audit -name '*universal*.apk' | head -1)
           test -n "$apk"
-          "$aapt" dump badging "$apk" > audit-apk-badging.txt
-          grep -Fq "package: name='com.podium.air.audit2'" audit-apk-badging.txt
-          grep -Fq "application-label:'Podium Air Audit 2'" audit-apk-badging.txt
-          "$apksigner" verify --print-certs "$apk" > audit-signing-verification.txt
-          grep -Fqi "$(cat audit-expected-certificate.txt)" audit-signing-verification.txt
-          if grep -Fqi 'fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2' audit-signing-verification.txt; then
+          reports=dist/android-audit-diagnostics
+          mkdir -p "$reports"
+          cp "$apk" "$reports/Podium-Air-Audit-2-v1.8.1.apk"
+          cp audit-expected-certificate.txt "$reports/"
+          "$aapt" dump badging "$apk" | tee "$reports/audit-apk-badging.txt"
+          "$apksigner" verify --print-certs "$apk" | tee "$reports/audit-signing-verification.txt"
+          "$aapt" dump xmltree "$apk" AndroidManifest.xml > "$reports/audit-manifest.txt"
+          grep -Fq "package: name='com.podium.air.audit2'" "$reports/audit-apk-badging.txt"
+          grep -Fq "application-label:'Podium Air Audit 2'" "$reports/audit-apk-badging.txt"
+          grep -Fqi "$(cat audit-expected-certificate.txt)" "$reports/audit-signing-verification.txt"
+          if grep -Fqi 'fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2' "$reports/audit-signing-verification.txt"; then
             echo 'Audit APK must never use the production signing certificate'
             exit 1
           fi
-          "$aapt" dump xmltree "$apk" AndroidManifest.xml > audit-manifest.txt
-          grep -Fq 'com.podium.air.audit2.fileprovider' audit-manifest.txt
+          grep -Fq 'com.podium.air.audit2.fileprovider' "$reports/audit-manifest.txt"
           mkdir -p dist/android-audit
-          cp "$apk" dist/android-audit/Podium-Air-Audit-2-v1.8.1.apk
+          cp "$reports/"* dist/android-audit/
           sha256sum dist/android-audit/*.apk > dist/android-audit/SHA256SUMS.txt
-          cp audit-apk-badging.txt audit-signing-verification.txt audit-manifest.txt dist/android-audit/
       - uses: actions/upload-artifact@v4
         with:
           name: podium-air-android-audit
           path: dist/android-audit/
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: podium-air-android-audit-UNVERIFIED-diagnostics
+          path: dist/android-audit-diagnostics/
+          if-no-files-found: warn
       - name: Validate unsigned production build independently
         run: >-
           bash gradlew :app:assembleProdRelease --no-daemon --no-parallel --max-workers=1
