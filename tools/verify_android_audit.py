@@ -21,6 +21,9 @@ checker = (ROOT / "app/src/main/java/com/music/bitchord/data/AppUpdateChecker.kt
 assert 'if (BuildConfig.IS_AUDIT) return@withContext' in checker
 manifest = ET.parse(ROOT / "app/src/main/AndroidManifest.xml").getroot()
 android = "{http://schemas.android.com/apk/res/android}"
+audit_manifest = ET.parse(ROOT / "app/src/audit/AndroidManifest.xml").getroot()
+assert audit_manifest.find("application").get(android + "label") == "Podium Air Audit 2"
+assert 'resValue("string", "app_name", "Podium Air Audit 2")' in audit
 provider = manifest.find("application/provider")
 assert provider.get(android + "authorities") == "${applicationId}.fileprovider"
 styles = {e.get("name") for p in (ROOT / "app/src/main/res").glob("values*/themes.xml") for e in ET.parse(p).getroot().findall("style")}
