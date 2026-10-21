@@ -34,6 +34,8 @@ The production variant is still compiled unsigned for build validation, but no i
 
 ## Verification
 
+CI runs Android unit tests, optimized audit packaging and unsigned production validation in separate JVM invocations. Packaging uses one worker and a 6 GB heap because the combined invocation exhausted its heap in ApkFlinger.
+
 Local: identity/XML/resource checks, protected asset/notice hashes, audit isolation checks, Android string-reference check and Intel model helper pass. Gradle execution cannot download its distribution in this workspace (network denied); compilation, Android tests, desktop/shared compatibility and packaged-APK checks run in GitHub Actions. CI exposed a desktop clipping regression from upstream partial EQ compensation. Full compensation is preserved by default; Android explicitly opts into partial compensation with its new limiter. Existing signal assertions stay intact, and a shared headroom regression test covers both policies. Device playback, login, offline mode and UI audit remain manual checks after the artifact is available. CI results are authoritative for compilation, not a substitute for device testing.
 
 Suggested device audit: install alongside production; confirm both launch and production retains its account/playlists; exercise Google/Spotify sign-in, stream/local/offline playback, downloads, queue/shuffle/repeat/crossfade/Automix, lyrics/RTL/share, album/artist navigation, Replay, profiles, output routing and widgets. Artwork and credits should retain current Podium Air branding.

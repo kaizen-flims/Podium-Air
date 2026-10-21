@@ -50,8 +50,16 @@ jobs:
           python3 tools/verify_identity.py
           python3 tools/verify_android_audit.py
           python3 tools/test_intel_beat_model.py
-      - name: Android tests, preview APK and unsigned release validation
-        run: bash gradlew :app:testDevDebugUnitTest :app:assembleProdAudit :app:assembleProdRelease --stacktrace
+      # Fresh JVMs keep R8's retained heap away from the next APK packager.
+      # A single worker also avoids packaging all ABI splits concurrently.
+      - name: Android unit tests
+        run: bash gradlew :app:testDevDebugUnitTest --no-daemon --no-parallel --max-workers=1 --stacktrace
+      - name: Build optimized isolated audit APK
+        run: >-
+          bash gradlew :app:assembleProdAudit --no-daemon --no-parallel --max-workers=1
+          -Pkotlin.compiler.execution.strategy=in-process
+          '-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true'
+          --stacktrace
       - name: Verify audit APK identity and independent certificate
         shell: bash
         run: |
@@ -79,6 +87,12 @@ jobs:
           name: podium-air-android-audit
           path: dist/android-audit/
           if-no-files-found: error
+      - name: Validate unsigned production build independently
+        run: >-
+          bash gradlew :app:assembleProdRelease --no-daemon --no-parallel --max-workers=1
+          -Pkotlin.compiler.execution.strategy=in-process
+          '-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true'
+          --stacktrace
       - uses: actions/upload-artifact@v4
         if: always()
         with:
