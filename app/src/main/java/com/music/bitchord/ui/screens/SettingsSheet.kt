@@ -1,6 +1,10 @@
 package com.music.bitchord.ui.screens
 
 import com.music.bitchord.wear.WatchInstaller
+import com.music.bitchord.AppIcon
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
 import android.content.Context
 import android.content.Intent
 import android.media.AudioFormat
@@ -1466,6 +1470,42 @@ fun SettingsScreen(
                     },
                     onClick = { AppSettings.setSmartVersionAlignment(!smartVersionAlignment) },
                 )
+            }
+            val appIconTitle = stringResource(R.string.app_icon)
+            row(appIconTitle, "icon", "launcher", "logo", "chrome", "liquid glass") {
+                var selectedIcon by remember { mutableStateOf(AppIcon.current(context)) }
+                SettingsRow(icon = Icons.Rounded.Apps, title = appIconTitle)
+                Row(
+                    modifier = Modifier.fillMaxWidth().selectableGroup()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(start = ROW_INSET, end = ROW_INSET, bottom = 14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    AppIcon.entries.forEach { option ->
+                        val selected = option == selectedIcon
+                        Column(
+                            modifier = Modifier.width(88.dp).clip(RoundedCornerShape(16.dp))
+                                .selectable(selected = selected, role = Role.RadioButton, onClick = {
+                                    AppIcon.apply(context, option)
+                                    selectedIcon = option
+                                }).padding(vertical = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Image(painter = painterResource(option.previewRes), contentDescription = null,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.size(64.dp).clip(RoundedCornerShape(14.dp)))
+                            Text(text = stringResource(option.labelRes),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = if (selected) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                modifier = Modifier.padding(top = 6.dp))
+                            if (selected) Icon(Icons.Rounded.Check,
+                                contentDescription = stringResource(option.labelRes),
+                                tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
             }
             val showNerdStatsTitle = stringResource(R.string.show_nerd_stats)
             row(showNerdStatsTitle, "debug", "bitrate", "codec") {

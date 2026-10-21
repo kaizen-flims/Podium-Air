@@ -3406,6 +3406,7 @@ private fun BitChordApp(
                 )
 
                 FrostedTopBar(
+                    showAppMark = !(homeHeadingVisible && selectedMoodGenre == null),
                     title = when (route) {
                         AppRoute.Spotify -> stringResource(R.string.spotify)
                         AppRoute.Discord -> "Discord"

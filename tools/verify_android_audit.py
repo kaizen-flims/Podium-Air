@@ -27,9 +27,19 @@ assert "Theme.BitChord" in styles, "Manifest theme must retain its resource iden
 for filename in ("backup_rules.xml", "data_extraction_rules.xml"):
     exclusions = {e.get("path") for e in ET.parse(ROOT / "app/src/main/res/xml" / filename).getroot().iter("exclude")}
     assert {"bitchord_auth.xml", "bitchord_auth_plain.xml", "bitchord_sources.xml", "bitchord_sources_plain.xml"} <= exclusions
-assert not manifest.findall("application/activity-alias"), "Icon changes require branding approval"
-assert not (ROOT / "app/src/main/java/com/music/bitchord/AppIcon.kt").exists()
-assert not list((ROOT / "app/src/main/res").glob("mipmap*/ic_*glass*"))
+aliases = manifest.findall("application/activity-alias")
+assert {e.get(android + "name") for e in aliases} == {".LauncherOriginal", ".LauncherLiquidGlass", ".LauncherChrome"}
+assert [e.get(android + "name") for e in aliases if e.get(android + "enabled") == "true"] == [".LauncherOriginal"]
+assert not manifest.findall("application/activity/intent-filter/category[@" + android + "name='android.intent.category.LAUNCHER']")
+assert (ROOT / "app/src/main/java/com/music/bitchord/AppIcon.kt").exists()
+# Approved source files are bundled byte-for-byte; only launcher density copies are resized.
 for path in (ROOT / "app/src/main/res").glob("values*/strings.xml"):
     ET.parse(path)
 print(f"Audit isolation and {len(PROTECTED)} protected assets/notices verified")
+assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_original.png").read_bytes()).hexdigest() == "f42a0ac254210c52100991c9274d829e0524947a48ffc3da5a3f93fd972aacb4"
+assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_liquid_glass.png").read_bytes()).hexdigest() == "3b70b5104ef319f16a7f241797f61a7bf39c873fe07945de9d61cba038471ac2"
+assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_chrome.png").read_bytes()).hexdigest() == "d3dc7432321a709266c84ead2ad04fa3136bac46f1bfb0f220caaf0c3844075f"
+chrome = (ROOT / "app/src/main/res/drawable-nodpi/podium_icon_chrome.png").read_bytes()
+for name in ("app/src/main/res/drawable-nodpi/podium_air_ui_mono.png", "app/src/main/res/drawable-nodpi/podium_air_icon.png", "sharedUi/src/commonMain/composeResources/drawable/podium_chrome.png"):
+    assert (ROOT / name).read_bytes() == chrome, name
+print("Three approved launcher choices and exact Chrome assets verified")

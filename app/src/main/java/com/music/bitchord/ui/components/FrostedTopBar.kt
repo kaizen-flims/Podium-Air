@@ -163,6 +163,8 @@ fun FrostedTopBar(
     /** Source sampled by floating top-bar surfaces when liquid glass is off. */
     backButtonHazeState: HazeState? = null,
     trailingTitle: String? = null,
+    /** Home has its own large mark; hide only the duplicate leading mark there. */
+    showAppMark: Boolean = true,
     onBack: (() -> Unit)? = null,
     refreshing: Boolean = false,
     // A lambda, not a value: the drag changes every frame, and reading it in
@@ -306,14 +308,13 @@ fun FrostedTopBar(
                         )
                     }
                 }
-            } else if (useFloatingChrome) {
+            } else if (showAppMark && useFloatingChrome) {
                 FloatingAppMark(
-                    hazeState = backButtonHazeState,
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = PAGE_GUTTER),
                 )
-            } else {
+            } else if (showAppMark) {
                 Row(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
@@ -323,7 +324,7 @@ fun FrostedTopBar(
                     Image(
                         painter = painterResource(R.drawable.podium_air_ui_mono),
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp).clip(CircleShape).background(Color.Black),
+                        modifier = Modifier.size(40.dp),
                     )
                     // The dev flavor gets its own applicationId so it can sit
                     // installed next to the prod build; this badge is the
@@ -369,35 +370,25 @@ fun FrostedTopBar(
     }
 }
 
-/** Root-page app mark: a navbar-matched logo circle plus an external Dev badge. */
-@OptIn(ExperimentalHazeMaterialsApi::class)
+/** Larger Chrome mark with an external Dev badge. */
 @Composable
 private fun FloatingAppMark(
-    hazeState: HazeState?,
     modifier: Modifier = Modifier,
 ) {
-    val reduceDynamicBlur by AppSettings.reduceDynamicBlur.collectAsStateWithLifecycle()
-    val useLiquidGlass = LocalLiquidGlassEnabled.current && isGlassSupported()
-    val contentColor = if (useLiquidGlass && !reduceDynamicBlur) {
-        glassContentColor()
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(44.dp)
-                .then(artworkPageSurface(shape = CircleShape, hazeState = hazeState)),
+                .size(52.dp)
+                .clipToBounds(),
             contentAlignment = Alignment.Center,
         ) {
             Image(
                 painter = painterResource(R.drawable.podium_air_ui_mono),
                 contentDescription = null,
-                modifier = Modifier.size(24.dp).clip(CircleShape).background(Color.Black),
+                modifier = Modifier.size(52.dp).graphicsLayer { scaleX = 1.3f; scaleY = 1.3f },
             )
         }
         if (BuildConfig.FLAVOR == "dev") {

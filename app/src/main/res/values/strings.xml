@@ -1210,4 +1210,8 @@
     <string name="wear_os_code_hint">Pairing code</string>
     <string name="wear_os_done">Done</string>
     <string name="signed_by">Signed by %1$s</string>
+    <string name="app_icon" translatable="false">App icon</string>
+    <string name="app_icon_original" translatable="false">Original</string>
+    <string name="app_icon_liquid_glass" translatable="false">Liquid Glass</string>
+    <string name="app_icon_chrome" translatable="false">Chrome</string>
 </resources>

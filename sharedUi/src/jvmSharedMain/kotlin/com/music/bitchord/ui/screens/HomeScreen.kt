@@ -1,6 +1,8 @@
 package com.music.bitchord.ui.screens
 
 import com.music.bitchord.ui.components.contextClick
+import com.music.bitchord.ui.brandLogoResource
+import com.music.bitchord.ui.useChromeBranding
 import com.music.bitchord.ui.AppUi
 import com.music.bitchord.sharedui.resources.*
 import org.jetbrains.compose.resources.painterResource
@@ -502,12 +504,12 @@ private fun HomeTitle(title: String, modifier: Modifier = Modifier) {
     val logoHeight = with(LocalDensity.current) { (style.fontSize * LOGO_TO_FONT).toDp() }
     Column(modifier = modifier.padding(horizontal = PAGE_GUTTER, vertical = 8.dp)) {
         Icon(
-            painter = painterResource(Res.drawable.ic_logo),
+            painter = painterResource(brandLogoResource),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onBackground,
+            tint = if (useChromeBranding) Color.Unspecified else MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
                 .padding(bottom = 14.dp)
-                .height(logoHeight)
+                .height(if (useChromeBranding) 80.dp else logoHeight)
                 .aspectRatio(LOGO_ASPECT),
         )
         Text(
