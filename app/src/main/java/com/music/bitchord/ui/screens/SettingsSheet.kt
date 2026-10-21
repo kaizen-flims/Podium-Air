@@ -113,6 +113,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -1493,7 +1494,10 @@ fun SettingsScreen(
                         ) {
                             Image(painter = painterResource(option.previewRes), contentDescription = null,
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.size(64.dp).clip(RoundedCornerShape(14.dp)))
+                                modifier = Modifier.size(64.dp).clip(RoundedCornerShape(14.dp)).then(
+                                    if (option == AppIcon.Original) Modifier.graphicsLayer {
+                                        scaleX = 1.2f; scaleY = 1.2f
+                                    } else Modifier))
                             Text(text = stringResource(option.labelRes),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = if (selected) MaterialTheme.colorScheme.primary

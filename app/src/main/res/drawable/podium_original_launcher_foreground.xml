@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Original red artwork; its own resource, independent of in-app Chrome. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="4dp">
+    <bitmap android:src="@drawable/podium_icon_original" android:gravity="fill" />
+</inset>

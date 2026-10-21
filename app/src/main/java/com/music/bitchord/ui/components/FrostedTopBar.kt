@@ -359,7 +359,7 @@ fun FrostedTopBar(
                     Spacer(Modifier.width(ACCESSORY_GAP))
                 }
                 if (useFloatingChrome) {
-                    ArtworkPageActions(hazeState = backButtonHazeState, content = actions)
+                    ArtworkPageActions(content = actions)
                 } else {
                     actions()
                 }
@@ -388,7 +388,7 @@ private fun FloatingAppMark(
             Image(
                 painter = painterResource(R.drawable.podium_air_ui_mono),
                 contentDescription = null,
-                modifier = Modifier.size(52.dp).graphicsLayer { scaleX = 1.3f; scaleY = 1.3f },
+                modifier = Modifier.size(52.dp),
             )
         }
         if (BuildConfig.FLAVOR == "dev") {
@@ -433,16 +433,14 @@ private fun ArtworkPageBackButton(
     }
 }
 
-/** One shared pill for every action at the right of a floating top bar. */
+/** Bare action row: the profile photo has no surrounding glass surface. */
 @Composable
 private fun ArtworkPageActions(
-    hazeState: HazeState?,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     Row(
         modifier = modifier
-            .then(artworkPageSurface(shape = CircleShape, hazeState = hazeState))
             // Keep the right edge fixed while a new action opens room to its
             // left. The surface itself therefore grows instead of jumping to
             // its new width in a single frame.
@@ -562,16 +560,14 @@ fun TopBarAccountButton(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(AVATAR_SIZE)
-                    .clip(CircleShape)
-                    .thumbnailBorder(CircleShape),
+                    .clip(CircleShape),
             )
         } else {
             Box(
                 modifier = Modifier
                     .size(AVATAR_SIZE)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .thumbnailBorder(CircleShape),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -672,4 +668,4 @@ private val PUCK_OVERSHOOT = 20.dp
  * Smaller than an icon's 24dp box: a filled circle carries more weight than a
  * glyph does, and at 24 it sat heavier in the bar than the wordmark opposite it.
  */
-private val AVATAR_SIZE = 28.dp
+private val AVATAR_SIZE = 44.dp

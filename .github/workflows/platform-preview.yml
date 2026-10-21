@@ -45,8 +45,10 @@ jobs:
           keytool -exportcert -keystore "$HOME/.android/debug.keystore" \
             -storepass android -alias androiddebugkey > audit-certificate.der
           sha256sum audit-certificate.der | cut -d ' ' -f 1 > audit-expected-certificate.txt
+          grep -Fxq 'f54546718dc928e7d68d745cff4741c8a64f088564cd35c515a81d870c94a9ac' audit-expected-certificate.txt
       - name: Verify preserved identity and resource integrity
         run: |
+          python3 -m pip install --disable-pip-version-check Pillow
           python3 tools/verify_identity.py
           python3 tools/verify_android_audit.py
           python3 tools/test_intel_beat_model.py

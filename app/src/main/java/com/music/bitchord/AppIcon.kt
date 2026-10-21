@@ -6,8 +6,8 @@ import android.content.pm.PackageManager
 
 /** Launcher choice is independent of the Chrome mark inside the app. */
 enum class AppIcon(val alias: String, val iconRes: Int, val labelRes: Int, val previewRes: Int) {
-    Original("LauncherOriginal", R.mipmap.ic_launcher, R.string.app_icon_original, R.drawable.podium_icon_original),
-    LiquidGlass("LauncherLiquidGlass", R.mipmap.ic_launcher_liquid_glass, R.string.app_icon_liquid_glass, R.drawable.podium_icon_liquid_glass),
+    Original("LauncherOriginal", R.mipmap.ic_launcher_original, R.string.app_icon_original, R.drawable.podium_icon_original),
+    LiquidGlass("LauncherLiquidGlass", R.mipmap.ic_launcher_liquid_glass, R.string.app_icon_liquid_glass, R.drawable.podium_liquid_glass_trimmed),
     Chrome("LauncherChrome", R.mipmap.ic_launcher_chrome, R.string.app_icon_chrome, R.drawable.podium_icon_chrome);
 
     private fun component(context: Context) =

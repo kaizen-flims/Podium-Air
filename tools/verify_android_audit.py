@@ -43,7 +43,22 @@ print(f"Audit isolation and {len(PROTECTED)} protected assets/notices verified")
 assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_original.jpg").read_bytes()).hexdigest() == "f42a0ac254210c52100991c9274d829e0524947a48ffc3da5a3f93fd972aacb4"
 assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_liquid_glass.jpg").read_bytes()).hexdigest() == "3b70b5104ef319f16a7f241797f61a7bf39c873fe07945de9d61cba038471ac2"
 assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_chrome.jpg").read_bytes()).hexdigest() == "d3dc7432321a709266c84ead2ad04fa3136bac46f1bfb0f220caaf0c3844075f"
-chrome = (ROOT / "app/src/main/res/drawable-nodpi/podium_icon_chrome.jpg").read_bytes()
-for name in ("app/src/main/res/drawable-nodpi/podium_air_ui_mono.jpg", "app/src/main/res/drawable-nodpi/podium_air_icon.jpg", "sharedUi/src/commonMain/composeResources/drawable/podium_chrome.jpg"):
+# UI cutouts must have alpha; the original uploaded source assets remain intact.
+from PIL import Image
+chrome = (ROOT / "app/src/main/res/drawable-nodpi/podium_air_ui_mono.png").read_bytes()
+for name in ("app/src/main/res/drawable-nodpi/podium_air_icon.png", "sharedUi/src/commonMain/composeResources/drawable/podium_chrome.png"):
     assert (ROOT / name).read_bytes() == chrome, name
-print("Three approved launcher choices and exact Chrome assets verified")
+for name in ("app/src/main/res/drawable-nodpi/podium_air_ui_mono.png", "app/src/main/res/drawable-nodpi/podium_liquid_glass_trimmed.png"):
+    image = Image.open(ROOT / name)
+    assert image.mode == "RGBA", name
+    alpha = image.getchannel("A")
+    assert alpha.getextrema() == (0, 255), name
+    assert all(alpha.getpixel(point) == 0 for point in ((0, 0), (image.width-1, 0), (0, image.height-1), (image.width-1, image.height-1))), name
+    assert alpha.getpixel((image.width//2, image.height//2)) >= 250, name
+original = next(e for e in aliases if e.get(android + "name") == ".LauncherOriginal")
+assert original.get(android + "icon") == "@mipmap/ic_launcher_original"
+assert manifest.find("application").get(android + "icon") == "@mipmap/ic_launcher_original"
+foreground = (ROOT / "app/src/main/res/drawable/podium_original_launcher_foreground.xml").read_text()
+assert ET.fromstring(foreground).find("bitmap").get(android + "src") == "@drawable/podium_icon_original"
+assert '@drawable/podium_liquid_glass_trimmed' in (ROOT / "app/src/main/res/drawable/podium_glass_launcher_foreground.xml").read_text()
+print("Independent red Original launcher, borderless glass and transparent Chrome verified")
