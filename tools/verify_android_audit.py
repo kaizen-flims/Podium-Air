@@ -22,6 +22,11 @@ manifest = ET.parse(ROOT / "app/src/main/AndroidManifest.xml").getroot()
 android = "{http://schemas.android.com/apk/res/android}"
 provider = manifest.find("application/provider")
 assert provider.get(android + "authorities") == "${applicationId}.fileprovider"
+styles = {e.get("name") for p in (ROOT / "app/src/main/res").glob("values*/themes.xml") for e in ET.parse(p).getroot().findall("style")}
+assert "Theme.BitChord" in styles, "Manifest theme must retain its resource identifier"
+for filename in ("backup_rules.xml", "data_extraction_rules.xml"):
+    exclusions = {e.get("path") for e in ET.parse(ROOT / "app/src/main/res/xml" / filename).getroot().iter("exclude")}
+    assert {"bitchord_auth.xml", "bitchord_auth_plain.xml", "bitchord_sources.xml", "bitchord_sources_plain.xml"} <= exclusions
 assert not manifest.findall("application/activity-alias"), "Icon changes require branding approval"
 assert not (ROOT / "app/src/main/java/com/music/bitchord/AppIcon.kt").exists()
 assert not list((ROOT / "app/src/main/res").glob("mipmap*/ic_*glass*"))

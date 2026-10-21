@@ -159,6 +159,9 @@ object PlayerPlatform {
 }
 
 /** The settings the player reads, named and typed as the phone's AppSettings has them. */
+// Existing desktop hosts have no Android status bar or queue-history preference.
+private val DisabledOptionalPlayerSetting = MutableStateFlow(false)
+
 interface PlayerSettingsSource {
     val animatedCanvas: StateFlow<Boolean>
     val audioQualityCellular: StateFlow<AudioQuality>
@@ -166,10 +169,10 @@ interface PlayerSettingsSource {
     val canvasOverCellular: StateFlow<Boolean>
     val fullBleedArtwork: StateFlow<Boolean>
     val hideSongStatus: StateFlow<Boolean>
-    val showQueueHistory: StateFlow<Boolean>
+    val showQueueHistory: StateFlow<Boolean> get() = DisabledOptionalPlayerSetting
     val hideVolumeBar: StateFlow<Boolean>
     /** Hide the device status bar while the player is up. Always false where there is none. */
-    val hideStatusBar: StateFlow<Boolean>
+    val hideStatusBar: StateFlow<Boolean> get() = DisabledOptionalPlayerSetting
     val lastPlayerScreen: StateFlow<LastPlayerScreen>
     val legacyMeshGradient: StateFlow<Boolean>
     val lyricsBlur: StateFlow<Boolean>
