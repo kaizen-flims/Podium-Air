@@ -12,7 +12,8 @@ for name, digest in PROTECTED.items():
 gradle = (ROOT / "app/build.gradle.kts").read_text()
 audit = gradle.split('create("audit") {', 1)[1].split('create("benchmark")', 1)[0]
 assert 'applicationIdSuffix = ".audit"' in audit
-assert 'signingConfig = signingConfigs.getByName("debug")' in audit
+assert 'signingConfig = signingConfigs.getByName("audit")' in audit
+assert 'storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")' in gradle
 assert 'matchingFallbacks += listOf("release")' in audit
 assert '"IS_AUDIT", "true"' in audit
 assert '"IS_AUDIT", "false"' in gradle

@@ -24,7 +24,7 @@ Use the `podium-air-android-audit` workflow artifact, containing `Podium-Air-Aud
 
 - Gradle variant: prodAudit (R8 enabled, non-debuggable, release fallback).
 - Package: com.podium.air.audit; label: Podium Air Audit.
-- Uses the Android test signing key, never the production certificate or release secrets. CI caches this separate test key for repeat audit installs. If the cache is lost the audit app alone may need reinstallation; production remains separate.
+- Uses the Android test signing key, never the production certificate or release secrets. CI caches this separate test key, pins its exact path and verifies the certificate against the previous audit APK before building and uploading. A missing/different key fails CI instead of producing an incompatible audit update. Production remains separate.
 - Private preferences, login, database and cache belong to the audit package. It starts fresh; production data is not migrated or deleted.
 - FileProvider authorities derive from applicationId, preventing provider installation conflicts.
 - Audit update polling is disabled; audit builds come from PR artifacts.

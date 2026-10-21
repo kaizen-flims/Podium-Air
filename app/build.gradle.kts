@@ -119,6 +119,14 @@ android {
     }
 
     signingConfigs {
+        // Pin the same file restored by CI; the SDK's default debug-key location
+        // can vary between runner images and Android environment variables.
+        create("audit") {
+            storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         // Both halves have to be there, not just the properties file: it *names*
         // the keystore rather than containing it, and both are gitignored
         // separately, so a checkout can easily end up with the one and not the
@@ -180,7 +188,7 @@ android {
             initWith(getByName("release"))
             applicationIdSuffix = ".audit"
             versionNameSuffix = "-audit-v1.8.1-branding2"
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("audit")
             matchingFallbacks += listOf("release")
             resValue("string", "app_name", "Podium Air Audit")
             buildConfigField("boolean", "IS_AUDIT", "true")

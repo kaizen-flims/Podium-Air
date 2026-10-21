@@ -45,6 +45,13 @@ jobs:
               -dname 'CN=Podium Air Audit,O=Podium Air,C=IN' \
               -keyalg RSA -keysize 2048 -validity 10000
           fi
+      - name: Verify audit key matches the installed audit app
+        shell: bash
+        run: |
+          set -euo pipefail
+          fingerprint=$(keytool -exportcert -keystore "$HOME/.android/debug.keystore" \
+            -storepass android -alias androiddebugkey | sha256sum | cut -d ' ' -f 1)
+          test "$fingerprint" = 'bc7867e27309d18b4747c2f140955afc0537a8cd159af808e8e831e19b433d2d'
       - name: Verify preserved identity and resource integrity
         run: |
           python3 tools/verify_identity.py
@@ -72,6 +79,7 @@ jobs:
           grep -Fq "package: name='com.podium.air.audit'" audit-apk-badging.txt
           grep -Fq "application-label:'Podium Air Audit'" audit-apk-badging.txt
           "$apksigner" verify --print-certs "$apk" > audit-signing-verification.txt
+          grep -Fqi 'bc7867e27309d18b4747c2f140955afc0537a8cd159af808e8e831e19b433d2d' audit-signing-verification.txt
           if grep -Fqi 'fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2' audit-signing-verification.txt; then
             echo 'Audit APK must never use the production signing certificate'
             exit 1
