@@ -36,10 +36,10 @@ assert (ROOT / "app/src/main/java/com/music/bitchord/AppIcon.kt").exists()
 for path in (ROOT / "app/src/main/res").glob("values*/strings.xml"):
     ET.parse(path)
 print(f"Audit isolation and {len(PROTECTED)} protected assets/notices verified")
-assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_original.png").read_bytes()).hexdigest() == "f42a0ac254210c52100991c9274d829e0524947a48ffc3da5a3f93fd972aacb4"
-assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_liquid_glass.png").read_bytes()).hexdigest() == "3b70b5104ef319f16a7f241797f61a7bf39c873fe07945de9d61cba038471ac2"
-assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_chrome.png").read_bytes()).hexdigest() == "d3dc7432321a709266c84ead2ad04fa3136bac46f1bfb0f220caaf0c3844075f"
-chrome = (ROOT / "app/src/main/res/drawable-nodpi/podium_icon_chrome.png").read_bytes()
-for name in ("app/src/main/res/drawable-nodpi/podium_air_ui_mono.png", "app/src/main/res/drawable-nodpi/podium_air_icon.png", "sharedUi/src/commonMain/composeResources/drawable/podium_chrome.png"):
+assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_original.jpg").read_bytes()).hexdigest() == "f42a0ac254210c52100991c9274d829e0524947a48ffc3da5a3f93fd972aacb4"
+assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_liquid_glass.jpg").read_bytes()).hexdigest() == "3b70b5104ef319f16a7f241797f61a7bf39c873fe07945de9d61cba038471ac2"
+assert hashlib.sha256((ROOT / "app/src/main/res/drawable-nodpi/podium_icon_chrome.jpg").read_bytes()).hexdigest() == "d3dc7432321a709266c84ead2ad04fa3136bac46f1bfb0f220caaf0c3844075f"
+chrome = (ROOT / "app/src/main/res/drawable-nodpi/podium_icon_chrome.jpg").read_bytes()
+for name in ("app/src/main/res/drawable-nodpi/podium_air_ui_mono.jpg", "app/src/main/res/drawable-nodpi/podium_air_icon.jpg", "sharedUi/src/commonMain/composeResources/drawable/podium_chrome.jpg"):
     assert (ROOT / name).read_bytes() == chrome, name
 print("Three approved launcher choices and exact Chrome assets verified")
