@@ -1,0 +1,30 @@
+name: Web PWA CI
+on:
+  pull_request:
+    paths: ['web/**', '.github/workflows/web-ci.yml']
+  push:
+    branches: ['feat/official-pwa-integration']
+    paths: ['web/**', '.github/workflows/web-ci.yml']
+permissions:
+  contents: read
+jobs:
+  check-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile
+      - run: corepack pnpm typecheck
+      - run: corepack pnpm test
+      - run: corepack pnpm build:site
+      - run: node scripts/check-pwa.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-pwa-preview
+          path: web/app/dist
