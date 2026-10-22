@@ -1,0 +1,22 @@
+Podium Air Web
+Maintained and branded by Prem Das / Kaizen.
+Source: https://github.com/kaizen-flims/Podium-Air
+
+Based on BitChord Web by Kushagra Singh and contributors.
+Upstream: https://github.com/kushagrasinghx/BitChord
+Imported commit: edc1e6f36febf71a118e649411d2fc21b70ead45
+License: GNU General Public License v3, provided in LICENSE.txt and ../LICENSE.
+Original copyright notices and third-party dependency licenses remain applicable.
+
+Podium Air modifications: branding, original flat P asset exports, development-only
+extension origins and identity, install manifest and offline static-shell caching.
+Authentication and playback algorithms are retained from upstream.
+
+The optional Discord integration retains upstream's Discord application id.
+Listen Together retains upstream's default service endpoint and invite origin.
+Those services are operated upstream, not by Podium Air.
+
+Third-party assets and dependencies retain their respective rights and licenses.
+The imported SF Pro Display font binaries require provenance/distribution review
+before a public release, as noted in the repository's THIRD_PARTY_NOTICES.md.
+No production deployment or release is authorized by this integration.

@@ -17,3 +17,13 @@ compatibility and need provenance/distribution review before a public release.
 Review ONNX model provenance and actual native FFmpeg configuration and license
 before distribution; upstream's claimed license is not sufficient verification.
 No release is authorized by this integration PR.
+
+## Web / PWA
+
+The independent `web/` workspace imports BitChord Web at commit
+`edc1e6f36febf71a118e649411d2fc21b70ead45` under the root GPLv3 license.
+See `web/UPSTREAM-NOTICE.txt` and `web/LICENSE`; the built app includes both
+license and attribution links in Settings. The upstream bridge protocol and
+internal package identifiers remain for compatibility. Third-party web packages,
+fixtures, and the preserved SF Pro Display font binaries retain their original
+rights; font distribution provenance requires review before a public release.

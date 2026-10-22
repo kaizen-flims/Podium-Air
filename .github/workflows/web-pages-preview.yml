@@ -1,0 +1,45 @@
+name: PWA GitHub Pages preview
+on:
+  push:
+    branches: ['feat/official-pwa-integration']
+    paths: ['web/**', '.github/workflows/web-pages-preview.yml']
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: podium-air-pages-preview
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile
+      - run: corepack pnpm typecheck
+      - run: corepack pnpm test
+      - name: Build review branch for GitHub Pages
+        env:
+          PODIUM_AIR_SITE_ORIGINS: https://kaizen-flims.github.io
+        run: corepack pnpm build:pages
+      - run: node scripts/check-pwa.mjs /Podium-Air/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/app/dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy review build
+        id: deployment
+        uses: actions/deploy-pages@v4
