@@ -15,7 +15,8 @@ function devExtensionId(): string {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  base: mode === 'pages' ? '/Podium-Air/' : '/',
   plugins: [react(), tailwindcss(), pwaShell()],
   define: {
     DEV_EXTENSION_ID: JSON.stringify(devExtensionId()),
@@ -29,4 +30,4 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
-});
+}));

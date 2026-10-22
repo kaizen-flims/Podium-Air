@@ -55,7 +55,7 @@ It supports offline navigation, **not offline music playback**. Media, account
 requests, external services, API paths and extension downloads are not cached.
 Worker updates wait until existing tabs close; a build cannot mix old/new chunks.
 A future approved host must provide HTTPS and an SPA fallback to `index.html`.
-Assets currently use root-relative paths and require hosting at `/`.
+The standard build uses `/`; the explicit Pages preview build uses `/Podium-Air/`.
 
 ## Configuration (no production host selected)
 
@@ -91,3 +91,20 @@ install/toolbar PNGs are mechanical red-tinted size exports of its alpha silhoue
 No generated artwork or glossy/chrome launcher variant is used. Existing Android
 and desktop assets are untouched. Light/dark appearance, layout and motion are
 retained, with a near-black page background in dark mode and the upstream red accents.
+
+## GitHub Pages review build
+
+The explicitly authorized preview uses the same repository, built from
+`feat/official-pwa-integration` by `web-pages-preview.yml`; it does not merge the
+PR or change the existing Cloudflare website. Enable **GitHub Actions** in the
+repository's Pages settings before deployment can finish.
+
+`pnpm build:pages` builds for `/Podium-Air/` with hash routing, so refreshes and
+shared page links work on Pages without a server rewrite. Normal `build:site`
+still builds the root-hosted app with browser routing. Public asset/download
+paths and the service worker honor the selected base; manifest icons, scope and
+start URL are relative. Cache cleanup is scoped to this base path.
+
+The preview workflow trusts only `https://kaizen-flims.github.io` for its companion
+extension build. The standard local build keeps its localhost-only default.
+Google login and native YouTube Music integration remain deferred.

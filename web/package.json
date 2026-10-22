@@ -14,6 +14,7 @@
     "build:site": "pnpm --filter @bitchord/extension package && pnpm --filter @bitchord/app build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "fixtures": "node scripts/capture-fixtures.mjs"
+    "fixtures": "node scripts/capture-fixtures.mjs",
+    "build:pages": "pnpm --filter @bitchord/extension package && pnpm --filter @bitchord/app build --mode pages"
   }
 }

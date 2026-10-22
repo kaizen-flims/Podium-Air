@@ -171,8 +171,8 @@ export default function SettingsPage() {
         <p className={settingsUi.footer}>
           Made with love by Prem. Based on{' '}
           <a href="https://github.com/kushagrasinghx/BitChord" target="_blank" rel="noreferrer">BitChord by Kushagra Singh and contributors</a>.
-          {' '}<a href="/LICENSE.txt">GPLv3 license</a> ·{' '}
-          <a href="/UPSTREAM-NOTICE.txt">Upstream attribution</a>
+          {' '}<a href={`${import.meta.env.BASE_URL}LICENSE.txt`}>GPLv3 license</a> ·{' '}
+          <a href={`${import.meta.env.BASE_URL}UPSTREAM-NOTICE.txt`}>Upstream attribution</a>
         </p>
       </div>
       {lyrics && (

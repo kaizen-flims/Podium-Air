@@ -41,3 +41,17 @@ They do not block compilation. Upstream fixtures/source retain original formatti
 
 No Google login implementation, native authentication changes, deployment,
 production release or merge is part of this branch.
+
+## GitHub Pages follow-up
+
+The user subsequently authorized GitHub Pages hosting for a review preview.
+Added a branch-only Pages publishing workflow and an explicit `pages` build mode
+for `/Podium-Air/`, with hash routes, base-aware assets/downloads/service worker,
+relative manifest URLs, and cache cleanup isolated by base path. No Google login
+or native module changes were added. Normal root-hosted build remains supported.
+
+Both root and Pages builds and their output checks passed; TypeScript checks and
+all 119 upstream tests passed again. The Pages subpath was also exercised in
+headless Chromium with static-only serving, including hash navigation and an
+offline reload. Publishing still requires Pages to be enabled in repository
+settings and the deployment workflow to finish; no live URL is claimed here.

@@ -3,7 +3,7 @@ export function LogoMark({ size = 20, className }: { size?: number; className?: 
   return <span aria-hidden="true" className={className} style={{
     display: 'inline-flex', flexShrink: 0, width: size, height: size,
     backgroundColor: '#fa233b',
-    mask: 'url(/logo-mark.png) center / contain no-repeat',
-    WebkitMask: 'url(/logo-mark.png) center / contain no-repeat',
+    mask: `url(${import.meta.env.BASE_URL}logo-mark.png) center / contain no-repeat`,
+    WebkitMask: `url(${import.meta.env.BASE_URL}logo-mark.png) center / contain no-repeat`,
   }} />;
 }
