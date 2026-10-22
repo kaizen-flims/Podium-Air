@@ -1,4 +1,10 @@
-# BitChord Desktop
+# Podium Air desktop
+
+For Podium Air Windows and macOS beta installers, use the [official downloads](https://podium-air-website.pages.dev/#download) or [kaizen-flims/Podium-Air releases](https://github.com/kaizen-flims/Podium-Air/releases). See [official app information](https://podium-air-website.pages.dev/about) for project identity and platform availability.
+
+## Inherited BitChord technical reference
+
+The following documentation describes the upstream BitChord build and package names. These commands and filenames are retained as upstream technical reference; their links are not the Podium Air release channel.
 
 BitChord has a Kotlin Multiplatform shared module and a Compose Multiplatform
 desktop application for macOS, Linux, and Windows. Desktop uses the JVM target, which is

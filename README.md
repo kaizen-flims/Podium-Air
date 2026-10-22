@@ -23,6 +23,20 @@
 
 </div>
 
+## Official Podium Air project
+
+Podium Air is the music application maintained and branded by **Prem Das (Kaizen / @nottt.premm)** under **kaizen-flims/Podium-Air**. It is a modified fork of BitChord; [original project and contributor credits](#support) remain below.
+
+- **Official website and downloads:** https://podium-air-website.pages.dev/
+- **App information and project identity:** https://podium-air-website.pages.dev/about
+- **About Prem Das:** https://podium-air-website.pages.dev/prem
+- **Application source and releases:** https://github.com/kaizen-flims/Podium-Air
+- **Website source:** https://github.com/kaizen-flims/Podium-Air-Website
+
+### Distinguishing similarly named projects
+
+This repository is **Podium Air**. [kaizen-flims/Podium](https://github.com/kaizen-flims/Podium) is Prem's separate offline, click-wheel Android player. [GHOSTxASR/podium-music-player](https://github.com/GHOSTxASR/podium-music-player) is a different repository whose app is named Podium; it is not this app's source or download location. Use the full name **Podium Air** and the official links above to identify this project.
+
 > [!IMPORTANT]
 > Podium Air is not affiliated with, endorsed by, or connected to YouTube or Google in any way. Use it at your own discretion.
 
@@ -80,7 +94,9 @@
 
 <h1><a id="download"></a>Download</h1>
 
-Grab a Podium Air APK from the [Releases](https://github.com/kaizen-flims/Podium-Air/releases) page when a release is available. Sideloading requires enabling "Install unknown apps" for whichever app you download it with.
+Choose the current Android APK or Windows/macOS desktop beta from the [official website](https://podium-air-website.pages.dev/#download) or [Podium Air releases](https://github.com/kaizen-flims/Podium-Air/releases). Android and desktop builds use separate release tags; match the asset to your device. The website is an app information/download site, not a browser music player.
+
+Sideloading on Android requires allowing installation from your browser or file manager. Desktop beta installers are unsigned; macOS builds are also unnotarized.
 
 </div>
 
