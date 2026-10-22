@@ -2,6 +2,7 @@ import { ChevronRight, Users } from 'lucide-react';
 import { lazy, Suspense, useState, type ComponentType, type ReactNode } from 'react';
 import { MdOutlineExtension } from 'react-icons/md';
 import { SiApplemusic, SiDiscord, SiSpotify, SiYoutubemusic } from 'react-icons/si';
+import { GoogleAccountPanel } from '@/google/GoogleAccount';
 import { PageHeader } from '@/components/PageHeader';
 import { PrefetchLink } from '@/components/PrefetchLink';
 import { useDiscord } from '@/extension/useDiscord';
@@ -76,6 +77,7 @@ export default function SettingsPage() {
     <div className={settingsUi.centered}>
       <PageHeader title="Settings" />
       <div className={settingsUi.body}>
+        <GoogleAccountPanel />
         <h2 className={settingsUi.sectionHeader}>Account & Integrations</h2>
         <section className={settingsUi.group}>
           <div className={settingsUi.integration}>

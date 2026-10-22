@@ -27,6 +27,7 @@ jobs:
       - run: corepack pnpm test
       - name: Build review branch for GitHub Pages
         env:
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.PODIUM_AIR_GOOGLE_CLIENT_ID }}
           PODIUM_AIR_SITE_ORIGINS: https://kaizen-flims.github.io
         run: corepack pnpm build:pages
       - run: node scripts/check-pwa.mjs /Podium-Air/
