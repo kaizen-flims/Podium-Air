@@ -1,4 +1,4 @@
-/** Browser-only Google authorization. Tokens stay in this module's memory. */
+/** Browser Google authorization, with optional short-lived per-tab restoration. */
 export const BASIC_SCOPES = 'openid profile email';
 export const YOUTUBE_SCOPE = 'https://www.googleapis.com/auth/youtube.readonly';
 const USERINFO = 'https://openidconnect.googleapis.com/v1/userinfo';
@@ -9,6 +9,7 @@ export interface GoogleState {
   youtube: boolean;
   revision: number;
   error: string | null;
+  rememberTab: boolean;
 }
 export interface TokenResponse { access_token?: string; expires_in?: number; scope?: string; error?: string }
 interface TokenClient { requestAccessToken(options: { prompt: string; hint?: string }): void }
@@ -32,8 +33,9 @@ export class GoogleSession {
     private loadSdk: () => Promise<GoogleOAuth>,
     private fetcher: typeof fetch = (...args) => fetch(...args),
     private now = () => Date.now(),
+    private tabStorage?: () => Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>,
   ) {
-    this.state = { status: clientId ? 'loading' : 'unconfigured', profile: null, youtube: false, revision: 0, error: null };
+    this.state = { status: clientId ? 'loading' : 'unconfigured', profile: null, youtube: false, revision: 0, error: null, rememberTab: false };
   }
   getSnapshot = (): GoogleState => this.state;
   subscribe = (listener: () => void): (() => void) => {
@@ -48,13 +50,60 @@ export class GoogleSession {
     if (!this.clientId || this.sdk) return Promise.resolve();
     if (this.loading) return this.loading;
     this.publish({ status: 'loading', error: null });
-    this.loading = this.loadSdk().then((sdk) => {
+    const epoch = this.epoch;
+    this.loading = this.loadSdk().then(async (sdk) => {
       this.sdk = sdk;
+      if (this.epoch !== epoch) return;
+      if (await this.restoreTab(epoch)) return;
       this.publish({ status: 'signed-out', error: null });
     }).catch(() => {
+      if (this.epoch !== epoch) return;
       this.publish({ status: 'error', error: 'Google sign-in could not load. Check your connection and try again.' });
     }).finally(() => { this.loading = null; });
     return this.loading;
+  }
+  private get storageKey() { return `podium-air:google-tab:${this.clientId}`; }
+  setRememberTab(rememberTab: boolean): void {
+    this.publish({ rememberTab });
+    if (!rememberTab) this.forgetTab();
+    else if (this.token) this.saveTab(this.state.youtube);
+  }
+  private forgetTab(): void {
+    try { this.tabStorage?.().removeItem(this.storageKey); } catch { /* Storage can be unavailable in private browsers. */ }
+  }
+  private saveTab(youtube: boolean): void {
+    if (!this.state.rememberTab || !this.token) return;
+    try {
+      if (!this.tabStorage) throw new Error('unavailable');
+      this.tabStorage().setItem(this.storageKey, JSON.stringify({ clientId: this.clientId,
+        accessToken: this.token.value, expiresAt: this.token.expiresAt, youtube }));
+    } catch {
+      this.forgetTab();
+      this.publish({ rememberTab: false, error: 'Your browser could not remember this tab. Sign-in still works until this page reloads.' });
+    }
+  }
+  private async restoreTab(epoch: number): Promise<boolean> {
+    let saved: { clientId: string; accessToken: string; expiresAt: number; youtube: boolean };
+    try {
+      const raw = this.tabStorage?.().getItem(this.storageKey);
+      if (!raw) return false;
+      saved = JSON.parse(raw);
+      if (!saved || saved.clientId !== this.clientId || typeof saved.accessToken !== 'string'
+        || !saved.accessToken || saved.accessToken.length > 8192 || typeof saved.youtube !== 'boolean'
+        || !Number.isFinite(saved.expiresAt) || saved.expiresAt <= this.now() || saved.expiresAt > this.now() + 86400000) {
+        this.forgetTab(); return false;
+      }
+    } catch { this.forgetTab(); return false; }
+    this.publish({ rememberTab: true });
+    // Never trust stored profile details: validate the saved token with Google first.
+    await this.accept({ access_token: saved.accessToken, expires_in: (saved.expiresAt - this.now()) / 1000,
+      scope: saved.youtube ? `${BASIC_SCOPES} ${YOUTUBE_SCOPE}` : BASIC_SCOPES }, epoch, () => {
+      if (this.epoch !== epoch) return;
+      this.clearToken();
+      this.publish({ status: 'signed-out', profile: null, youtube: false, rememberTab: false,
+        revision: this.state.revision + 1, error: 'Your saved connection could not be restored. Sign in again.' });
+    });
+    return true;
   }
   /** Called synchronously from a click so popup browsers retain user activation. */
   authorize(youtube = false): void {
@@ -114,6 +163,7 @@ export class GoogleSession {
       this.token = { value: token, expiresAt };
       const scopes = new Set((response.scope ?? '').split(/\s+/));
       this.publish({ status: 'signed-in', profile, youtube: scopes.has(YOUTUBE_SCOPE), revision: this.state.revision + 1, error: null });
+      this.saveTab(scopes.has(YOUTUBE_SCOPE));
       this.timer = setTimeout(() => this.expire(), Math.max(0, expiresAt - this.now()));
     } catch {
       onError('Google authorized the request, but your account could not be read. Please try again.');
@@ -122,13 +172,13 @@ export class GoogleSession {
   signOut(): void {
     this.epoch++;
     this.clearToken();
-    this.publish({ status: this.clientId ? 'signed-out' : 'unconfigured', profile: null, youtube: false, revision: this.state.revision + 1, error: null });
+    this.publish({ status: this.clientId ? 'signed-out' : 'unconfigured', profile: null, youtube: false, rememberTab: false, revision: this.state.revision + 1, error: null });
   }
-  private clearToken() { if (this.timer) clearTimeout(this.timer); this.timer = undefined; this.token = null; }
+  private clearToken() { if (this.timer) clearTimeout(this.timer); this.timer = undefined; this.token = null; this.forgetTab(); }
   private expire() {
     this.epoch++;
     this.clearToken();
-    this.publish({ status: 'expired', profile: null, youtube: false, revision: this.state.revision + 1, error: 'Your Google connection expired. Sign in again to continue.' });
+    this.publish({ status: 'expired', profile: null, youtube: false, rememberTab: false, revision: this.state.revision + 1, error: 'Your Google connection expired. Sign in again to continue.' });
   }
   /** Only fixed Google API paths are accepted; tokens cannot be sent to arbitrary hosts. */
   async youtubeGet(path: 'playlists' | 'playlistItems', params: Record<string, string>, signal?: AbortSignal): Promise<unknown> {

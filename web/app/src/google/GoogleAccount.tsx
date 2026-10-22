@@ -27,6 +27,11 @@ export function GoogleAccountPanel() {
     <h2 className="type-title-3-emphasized text-primary">Google account</h2>
     <GoogleLegalNotice />
     {auth.status === 'unconfigured' ? <p className="type-body-tall text-secondary">Google sign-in is being set up for this preview.</p> : <>
+      <label className="flex min-h-10 items-center gap-2 type-body text-primary">
+        <input type="checkbox" checked={auth.rememberTab} disabled={auth.status === 'loading' || auth.status === 'authorizing'}
+          onChange={(event) => googleSession.setRememberTab(event.currentTarget.checked)} />
+        Keep signed in in this tab
+      </label>
       {auth.profile && <div className="flex items-center gap-3">
         {auth.profile.picture && <img src={auth.profile.picture} width={36} height={36} className="size-9 rounded-full" alt="" referrerPolicy="no-referrer" />}
         <div className="min-w-0"><p className="truncate type-body-emphasized">{auth.profile.name}</p><p className="truncate type-body text-secondary">{auth.profile.email}</p></div>
@@ -34,10 +39,10 @@ export function GoogleAccountPanel() {
       {auth.error && <p role="status" className="type-body-tall text-secondary">{auth.error}</p>}
       {auth.profile && auth.status !== 'expired' ? <div className="flex flex-wrap items-center gap-3">
         {!auth.youtube && <GoogleSignInButton youtube />}
-        {auth.youtube && <PrefetchLink to="/google-library" className="type-body-emphasized text-key">View your YouTube playlists</PrefetchLink>}
+        <PrefetchLink to="/google-library" className="type-body-emphasized text-key">{auth.youtube ? 'View your YouTube playlists' : 'Open playlist library'}</PrefetchLink>
         <button className="min-h-10 type-body text-key" onClick={() => googleSession.signOut()}>Disconnect Google</button>
       </div> : <GoogleSignInButton />}
-      <p className="type-body-tall text-secondary">You choose whether to grant read-only access to your YouTube playlists. Your connection lasts until this page closes or Google access expires.</p>
+      <p className="type-body-tall text-secondary">This Google connection shows your profile and, with separate permission, playlists you own. It does not connect the music home screen. Enable “Keep signed in in this tab” to store the short-lived access token in this tab’s session storage and restore it after a refresh, until it expires. No refresh token is saved.</p>
     </>}
     <p className="type-body-tall text-secondary">YouTube Music playback still needs the companion extension. Google sign-in does not enable playback on its own.</p>
   </section>;
@@ -51,5 +56,6 @@ export function GoogleSidebarAccount() {
       <span className="truncate">{auth.profile.name}</span>
     </PrefetchLink> : auth.status === 'unconfigured' ? <PrefetchLink className="type-body text-secondary" to="/settings">Google sign-in setup pending</PrefetchLink> : <GoogleSignInButton />}
     {auth.error && <p role="status" className="type-body text-secondary">{auth.error}</p>}
+    {auth.profile && <PrefetchLink to="/google-library" className="type-body text-key">Your YouTube playlists</PrefetchLink>}
   </div>;
 }

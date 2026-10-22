@@ -97,3 +97,74 @@ describe('Google browser authorization', () => {
     expect(JSON.stringify(f.session.getSnapshot())).not.toMatch(/private-account-data|test-private-token/);
   });
 });
+
+function memoryTab() {
+  const data = new Map<string, string>();
+  return { data, getItem: (key: string) => data.get(key) ?? null,
+    setItem: (key: string, value: string) => { data.set(key, value); },
+    removeItem: (key: string) => { data.delete(key); } };
+}
+describe('optional tab restoration', () => {
+  beforeEach(() => { vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] }); });
+  afterEach(() => { vi.useRealTimers(); });
+  function setup(storage = memoryTab()) {
+    let config!: Parameters<GoogleOAuth['initTokenClient']>[0];
+    const sdk: GoogleOAuth = { initTokenClient: (input) => { config = input; return { requestAccessToken: vi.fn() }; } };
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => response({ sub: 'verified', name: 'Verified account' }));
+    const make = () => new GoogleSession('tab-client', async () => sdk, fetcher, () => Date.now(), () => storage);
+    const session = make();
+    const grant = async () => {
+      session.authorize(true);
+      config.callback({ access_token: 'short-lived-test-token', expires_in: 3600, scope: `${BASIC_SCOPES} ${YOUTUBE_SCOPE}` });
+      await vi.waitFor(() => expect(session.getSnapshot().status).toBe('signed-in'));
+    };
+    return { session, make, grant, fetcher, storage };
+  }
+  it('stores nothing by default, then restores an opted-in session after verifying it with Google', async () => {
+    const f = setup(); await f.session.prepare(); await f.grant();
+    expect(f.storage.data.size).toBe(0);
+    f.session.setRememberTab(true);
+    expect(f.storage.data.size).toBe(1);
+    expect([...f.storage.data.values()][0]).not.toContain('Verified account');
+    const fresh = f.make(); expect(fresh.getSnapshot().profile).toBeNull(); await fresh.prepare();
+    expect(fresh.getSnapshot()).toMatchObject({ status: 'signed-in', rememberTab: true, youtube: true, profile: { sub: 'verified' } });
+    expect(f.fetcher).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(fresh.getSnapshot())).not.toContain('short-lived-test-token');
+    fresh.signOut(); expect(f.storage.data.size).toBe(0);
+    const signedOut = f.make(); await signedOut.prepare(); expect(signedOut.getSnapshot().profile).toBeNull();
+  });
+  it('does not extend expiry on refresh and clears stored authorization when it expires', async () => {
+    const f = setup(); await f.session.prepare(); f.session.setRememberTab(true); await f.grant();
+    vi.advanceTimersByTime(1000); const fresh = f.make(); await fresh.prepare(); vi.advanceTimersByTime(3599001);
+    expect(fresh.getSnapshot().status).toBe('expired'); expect(f.storage.data.size).toBe(0);
+  });
+  it.each(['not json', JSON.stringify({ clientId: 'another-client', accessToken: 'invalid', expiresAt: Date.now() + 1000, youtube: true }),
+    JSON.stringify({ clientId: 'tab-client', accessToken: 'invalid', expiresAt: 0, youtube: true })])('discards invalid saved state without an account request', async (raw) => {
+    const f = setup(); f.storage.setItem('podium-air:google-tab:tab-client', raw); await f.session.prepare();
+    expect(f.fetcher).not.toHaveBeenCalled(); expect(f.storage.data.size).toBe(0); expect(f.session.getSnapshot().profile).toBeNull();
+  });
+  it('clears a revoked saved token and offers sign-in again', async () => {
+    const f = setup(); await f.session.prepare(); f.session.setRememberTab(true); await f.grant();
+    f.fetcher.mockResolvedValueOnce(response({}, 401)); const fresh = f.make(); await fresh.prepare();
+    expect(fresh.getSnapshot().status).toBe('signed-out'); expect(f.storage.data.size).toBe(0);
+    expect(fresh.getSnapshot().error).toMatch(/could not be restored/);
+  });
+  it('cannot resurrect a session disconnected while restoration is pending', async () => {
+    const f = setup(); await f.session.prepare(); f.session.setRememberTab(true); await f.grant();
+    let finish!: (value: Response) => void;
+    f.fetcher.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+    const fresh = f.make(); const pending = fresh.prepare(); await vi.waitFor(() => expect(f.fetcher).toHaveBeenCalledTimes(2));
+    fresh.signOut(); finish(response({ sub: 'late' })); await pending;
+    expect(fresh.getSnapshot().profile).toBeNull(); expect(f.storage.data.size).toBe(0);
+  });
+  it('removes saved authorization when remembering is switched off', async () => {
+    const f = setup(); await f.session.prepare(); f.session.setRememberTab(true); await f.grant(); f.session.setRememberTab(false);
+    expect(f.storage.data.size).toBe(0); expect(f.session.getSnapshot().status).toBe('signed-in');
+  });
+  it('keeps memory sign-in usable if browser storage is blocked', async () => {
+    const f = setup(); f.storage.setItem = () => { throw new Error('blocked'); };
+    await f.session.prepare(); f.session.setRememberTab(true); await f.grant();
+    expect(f.session.getSnapshot()).toMatchObject({ status: 'signed-in', rememberTab: false });
+    expect(f.session.getSnapshot().error).toMatch(/could not remember/);
+  });
+});

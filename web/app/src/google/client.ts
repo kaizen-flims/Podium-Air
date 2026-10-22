@@ -24,4 +24,5 @@ export function loadGoogleSdk(): Promise<GoogleOAuth> {
   });
   return loading;
 }
-export const googleSession = new GoogleSession((import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim(), loadGoogleSdk);
+export const googleSession = new GoogleSession((import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim(), loadGoogleSdk,
+  (...args) => fetch(...args), () => Date.now(), () => window.sessionStorage);

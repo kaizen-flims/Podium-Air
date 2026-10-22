@@ -22,8 +22,13 @@ The imported web implementation delegates those requests to its browser extensio
 - The browser uses Google's hosted account chooser/consent popup; Podium Air never
   asks for a Google password or copies Google session cookies.
 - The account profile is read directly from Google's UserInfo endpoint. OAuth
-  access tokens stay in module memory, never localStorage, sessionStorage, URLs,
-  query-cache data, cookies, log messages, the repository, or the service worker.
+  access tokens stay in module memory by default. The optional **Keep signed in
+  in this tab** setting saves the short-lived token and its original expiry in
+  sessionStorage, scoped to the OAuth client. Restoration verifies the token with
+  Google UserInfo before showing account identity. Tokens never enter localStorage,
+  URLs, query-cache data, cookies, logs, the repository or the service worker.
+  Opting out, disconnect, expiry and rejected restoration delete the saved record.
+  Browser storage failure falls back to memory-only login with a visible notice.
 - `/google-library` lists **owned YouTube playlists** using `playlists.list` with
   `mine=true`, supports pagination and opens playlists in YouTube Music to listen.
   This is not the full YouTube Music library and does not promise saved playlists.
@@ -31,8 +36,9 @@ The imported web implementation delegates those requests to its browser extensio
   API failures have explicit states. Expiry/disconnect drops account state, cancels
   private library queries and removes their cache. Late replies cannot restore a
   disconnected or superseded account.
-- No refresh token or backend session is created. Reopen/reload requires another
-  user-initiated authorization. Disconnect is local to Podium Air and does not sign
+- No refresh token or backend session is created. Reload can reuse an opted-in
+  tab connection until its original expiry; otherwise a user action is required.
+  Browser session restore may retain tab storage, but never extends Google expiry. Disconnect is local to Podium Air and does not sign
   out of Google or revoke the app grant; access can be revoked in Google Account.
 - When no client ID is configured, the UI says setup is pending and no Google SDK
   or user-data request is made. There is no dummy production client ID.

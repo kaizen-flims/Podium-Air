@@ -16,7 +16,7 @@ vi.mock('./client', async () => {
   return { googleSession: new GoogleSession('test-client', async () => ({ initTokenClient: (config) => {
     mock.scope = config.scope; mock.callback = config.callback;
     return { requestAccessToken: () => {} };
-  } }), (...args) => mock.fetcher(...args)) };
+  } }), (...args) => mock.fetcher(...args), () => Date.now(), () => window.sessionStorage) };
 });
 let root: Root;
 let host: HTMLDivElement;
@@ -70,5 +70,17 @@ describe('Google account interface with a mocked provider', () => {
     await click('Disconnect Google');
     expect(host.textContent).not.toContain('Private sample playlist');
     expect(queryClient.getQueriesData({ queryKey: ['google-library'] }).every(([, data]) => data === undefined)).toBe(true);
+  });
+  it('offers tab remembering before sign-in and lets the user turn it off', async () => {
+    await render();
+    const checkbox = host.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+    expect(checkbox.checked).toBe(false);
+    await act(async () => { checkbox.click(); });
+    await click('Sign in with Google'); await grant();
+    expect(sessionStorage.length).toBe(1);
+    expect(host.querySelector('a[href="/google-library"]')?.textContent).toBe('Open playlist library');
+    await act(async () => { checkbox.click(); });
+    expect(sessionStorage.length).toBe(0);
+    expect(host.textContent).toContain('Demo Listener');
   });
 });
