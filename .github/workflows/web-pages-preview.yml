@@ -1,7 +1,7 @@
 name: PWA GitHub Pages preview
 on:
   push:
-    branches: ['feat/official-pwa-integration']
+    branches: ['feat/official-pwa-integration', 'feat/pwa-google-integration']
     paths: ['web/**', '.github/workflows/web-pages-preview.yml']
 permissions:
   contents: read
