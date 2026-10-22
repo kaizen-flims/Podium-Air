@@ -175,6 +175,9 @@ export default function SettingsPage() {
           <a href="https://github.com/kushagrasinghx/BitChord" target="_blank" rel="noreferrer">BitChord by Kushagra Singh and contributors</a>.
           {' '}<a href={`${import.meta.env.BASE_URL}LICENSE.txt`}>GPLv3 license</a> ·{' '}
           <a href={`${import.meta.env.BASE_URL}UPSTREAM-NOTICE.txt`}>Upstream attribution</a>
+          {' '}· <a href={`${import.meta.env.BASE_URL}about.html`}>About the web app</a>
+          {' '}· <a href={`${import.meta.env.BASE_URL}privacy.html`}>Privacy Policy</a>
+          {' '}· <a href={`${import.meta.env.BASE_URL}terms.html`}>Terms of Service</a>
         </p>
       </div>
       {lyrics && (

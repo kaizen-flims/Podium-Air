@@ -3,6 +3,12 @@ import { PrefetchLink } from '@/components/PrefetchLink';
 import { googleSession } from './client';
 import { useGoogle } from './useGoogle';
 const button = 'inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#747775] bg-white px-4 py-2 text-[14px] font-medium text-[#1f1f1f] disabled:cursor-default disabled:opacity-60';
+function GoogleLegalNotice() {
+  return <p className="type-body-tall text-secondary">By connecting, you agree to the{' '}
+    <a className="text-key underline" href={`${import.meta.env.BASE_URL}terms.html`} target="_blank" rel="noreferrer">Terms of Service</a>{' '}
+    and acknowledge the{' '}<a className="text-key underline" href={`${import.meta.env.BASE_URL}privacy.html`} target="_blank" rel="noreferrer">Privacy Policy</a>.
+  </p>;
+}
 export function GoogleSignInButton({ youtube = false }: { youtube?: boolean }) {
   const auth = useGoogle();
   const busy = auth.status === 'loading' || auth.status === 'authorizing';
@@ -19,6 +25,7 @@ export function GoogleAccountPanel() {
   const auth = useGoogle();
   return <section className="space-y-3 rounded-[12px] bg-quinary p-4">
     <h2 className="type-title-3-emphasized text-primary">Google account</h2>
+    <GoogleLegalNotice />
     {auth.status === 'unconfigured' ? <p className="type-body-tall text-secondary">Google sign-in is being set up for this preview.</p> : <>
       {auth.profile && <div className="flex items-center gap-3">
         {auth.profile.picture && <img src={auth.profile.picture} width={36} height={36} className="size-9 rounded-full" alt="" referrerPolicy="no-referrer" />}
@@ -38,6 +45,7 @@ export function GoogleAccountPanel() {
 export function GoogleSidebarAccount() {
   const auth = useGoogle();
   return <div className="min-w-0 space-y-2">
+    {!auth.profile && auth.status !== 'unconfigured' && <GoogleLegalNotice />}
     {auth.profile ? <PrefetchLink to="/settings" className="flex min-h-10 items-center gap-2 type-body text-primary">
       {auth.profile.picture ? <img src={auth.profile.picture} className="size-6 rounded-full" width={24} height={24} alt="" referrerPolicy="no-referrer" /> : <FcGoogle size={18} />}
       <span className="truncate">{auth.profile.name}</span>

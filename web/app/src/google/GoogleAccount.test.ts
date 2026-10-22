@@ -51,7 +51,7 @@ describe('Google account interface with a mocked provider', () => {
     expect(host.textContent).toContain('YouTube Music playback still needs the companion extension');
     await click('Connect YouTube library'); expect(mock.scope).toContain(YOUTUBE_SCOPE);
     await grant(`${BASIC_SCOPES} ${YOUTUBE_SCOPE}`);
-    expect(host.querySelector('a')?.textContent).toBe('View your YouTube playlists');
+    expect(host.querySelector('a[href="/google-library"]')?.textContent).toBe('View your YouTube playlists');
     await click('Disconnect Google');
     expect(host.textContent).not.toContain('Demo Listener'); expect(googleSession.getSnapshot().youtube).toBe(false);
     expect(localStorage.length).toBe(0); expect(sessionStorage.length).toBe(0);

@@ -41,6 +41,17 @@ The imported web implementation delegates those requests to its browser extensio
 
 1. In an existing Google Cloud project owned by Prem, configure the OAuth consent
    app as **Podium Air**. Keep testing status for initial testers.
+   Prem has since requested a public OAuth audience. Publishing the OAuth audience
+   does not complete brand/sensitive-scope verification or merge these PRs.
+   Public branding URLs on the existing Pages preview are:
+   - Homepage: `https://kaizen-flims.github.io/Podium-Air/about.html`
+   - Privacy: `https://kaizen-flims.github.io/Podium-Air/privacy.html`
+   - Terms: `https://kaizen-flims.github.io/Podium-Air/terms.html`
+   Use these together so the homepage and privacy policy share a domain. The
+   homepage links both policies; Settings and Google connection controls also link
+   them before authorization. These pages describe the web preview and optional
+   extension, not the separate native apps. Brand verification/domain ownership
+   and sensitive YouTube permission approval still need Google's review.
 2. Create/use an OAuth **Web application** client. Authorized JavaScript origins:
    - `https://kaizen-flims.github.io` (origin only, not `/Podium-Air/` or a hash route)
    - `http://localhost` and `http://localhost:5173` for local development if needed.
