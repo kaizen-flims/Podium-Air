@@ -1,6 +1,18 @@
 # Maintainers
 
-This document lists the maintainers responsible for BitChord.
+## Podium Air
+
+| Maintainer | GitHub | Responsibilities |
+|---|---|---|
+| Prem Das (Kaizen / @nottt.premm) | [@kaizen-flims](https://github.com/kaizen-flims) | Podium Air branding, fork maintenance and project direction |
+
+[Official website](https://podium-air-website.pages.dev/) · [About Prem](https://podium-air-website.pages.dev/prem) · [App information](https://podium-air-website.pages.dev/about)
+
+Podium Air derives from BitChord. Maintaining this fork does not replace the original project's authorship or its contributors' credit.
+
+## Upstream BitChord
+
+The following table preserves the original BitChord maintainer credit.
 
 | Maintainer | GitHub | Responsibilities |
 |---|---|---|
