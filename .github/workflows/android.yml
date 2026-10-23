@@ -29,9 +29,9 @@ jobs:
         run: |
           chmod +x gradlew
           if [ "$GITHUB_REF" = 'refs/heads/main' ]; then
-            ./gradlew assembleProdDebug
+            ./gradlew :app:assembleProdDebug
           else
-            ./gradlew assembleDevDebug
+            ./gradlew :app:assembleDevDebug
           fi
       - uses: actions/upload-artifact@v4
         with:
@@ -83,7 +83,7 @@ jobs:
           } > keystore.properties
           chmod 600 keystore.properties
           chmod +x gradlew
-          ./gradlew assembleProdRelease
+          ./gradlew :app:assembleProdRelease
       - name: Verify and name the universal signed APK
         shell: bash
         run: |
