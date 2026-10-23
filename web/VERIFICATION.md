@@ -55,3 +55,19 @@ all 119 upstream tests passed again. The Pages subpath was also exercised in
 headless Chromium with static-only serving, including hash navigation and an
 offline reload. Publishing still requires Pages to be enabled in repository
 settings and the deployment workflow to finish; no live URL is claimed here.
+
+## Safari developer port (0.4.5)
+
+- Safari MV3 resource build and downloadable ZIP pass on Linux.
+- Packaged-worker smoke checks pass with cookie change events and external
+  messaging absent. Verified trusted origin acceptance, untrusted-origin denial,
+  Safari ping identity, Discord exclusion, signed-out auth and scoped header rules.
+- Download manifest and ZIP contents include all three browser packages plus
+  Safari developer instructions, packaging script, GPL and upstream credits.
+- Workspace typechecks and all 119 existing tests pass. Pages build and static
+  PWA checks pass. Chrome/Firefox still build; no native app source is modified.
+- New macOS workflow generates an Xcode wrapper and attempts unsigned macOS/iOS
+  Simulator compilation. Its result must be checked separately.
+- Apple-device runtime tests, signing, installable distribution, YouTube login,
+  personalized Home, seeking/background playback and standalone iOS PWA behavior
+  remain unverified. WebKit DNR issues can block these flows.

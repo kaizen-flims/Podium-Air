@@ -67,7 +67,7 @@ async function handle(request: BridgeRequest): Promise<BridgeResponse> {
         return okResponse<'ping'>(request.id, {
           version: browser.runtime.getManifest().version,
           protocol: BRIDGE_PROTOCOL,
-          browser: import.meta.env.FIREFOX ? 'firefox' : 'chromium',
+          browser: import.meta.env.SAFARI ? 'safari' : import.meta.env.FIREFOX ? 'firefox' : 'chromium',
           capabilities: CAPABILITIES,
         });
       case 'yt.fetch':
@@ -75,7 +75,7 @@ async function handle(request: BridgeRequest): Promise<BridgeResponse> {
       case 'yt.authState':
         return okResponse<'yt.authState'>(
           request.id,
-          await authState((request as BridgeRequest<'yt.authState'>).params.refresh === true),
+          await authState(import.meta.env.SAFARI || (request as BridgeRequest<'yt.authState'>).params.refresh === true),
         );
       case 'yt.selectChannel': {
         const state = await selectChannel((request as BridgeRequest<'yt.selectChannel'>).params.channelId);
@@ -97,7 +97,7 @@ async function handle(request: BridgeRequest): Promise<BridgeResponse> {
         await requestOrigins((request as BridgeRequest<'lyrics.requestPermissions'>).params.origins ?? []);
         return okResponse<'lyrics.requestPermissions'>(request.id, {});
       case 'spotify.authState': {
-        if ((request as BridgeRequest<'spotify.authState'>).params.refresh) spotify.invalidateSession();
+        if (import.meta.env.SAFARI || (request as BridgeRequest<'spotify.authState'>).params.refresh) spotify.invalidateSession();
         return okResponse<'spotify.authState'>(request.id, await spotify.authState());
       }
       case 'spotify.setConnected': {
@@ -256,7 +256,8 @@ export default defineBackground(() => {
     acceptPort(port);
   });
 
-  browser.cookies.onChanged.addListener(onCookieChanged);
+  // Safari does not expose cookies.onChanged. Refresh auth on explicit state reads there.
+  browser.cookies.onChanged?.addListener(onCookieChanged);
 
   // Discord's account is written by the connect page as well as here.
   discord.onDiscordState((data) => broadcast({ event: 'discord.state', data }));

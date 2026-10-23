@@ -11,7 +11,8 @@ export function pwaShell(): Plugin {
     configResolved(config) { base = config.base; },
     generateBundle(_options, bundle) {
       const publicFiles = ['favicon.png', 'logo-mark.png', 'icon-180.png', 'icon-192.png',
-        'icon-512.png', 'manifest.webmanifest', 'LICENSE.txt', 'UPSTREAM-NOTICE.txt'];
+        'icon-512.png', 'manifest.webmanifest', 'LICENSE.txt', 'UPSTREAM-NOTICE.txt',
+        'about.html', 'privacy.html', 'terms.html', 'legal.css'];
       const assets = ['index.html', ...Object.keys(bundle), ...publicFiles].filter((p) => !p.endsWith('.map')).map((p) => `${base}${p}`);
       const hash = createHash('sha256');
       for (const entry of Object.values(bundle)) hash.update(entry.type === 'chunk' ? entry.code : entry.source);
@@ -35,6 +36,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || url.origin !== self.location.origin || !url.pathname.startsWith(BASE)) return;
   const path = '/' + url.pathname.slice(BASE.length);
   if (event.request.mode === 'navigate') {
+    if (!url.search && /^\\/(about|privacy|terms)\\.html$/.test(path)) {
+      event.respondWith(fetch(event.request).catch(() => caches.open(CACHE).then((cache) => cache.match(url.pathname))));
+      return;
+    }
     // Only SPA routes receive the offline app shell; download/API errors stay errors.
     if (/^\\/(api|downloads)(\\/|$)/.test(path) || /\\.[a-z0-9]+$/i.test(path)) return;
     event.respondWith(fetch(event.request).catch(() => caches.open(CACHE).then((cache) => cache.match(BASE + 'index.html'))));

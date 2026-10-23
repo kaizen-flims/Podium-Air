@@ -6,6 +6,16 @@ import { queryClient } from '@/lib/queryClient';
 import { routes } from '@/routes';
 import '@/styles/global.css';
 
+// Remove tokens left by the retired browser OAuth preview without reading values.
+try {
+  for (let index = window.sessionStorage.length - 1; index >= 0; index--) {
+    const key = window.sessionStorage.key(index);
+    if (key?.startsWith('podium-air:google-tab:')) window.sessionStorage.removeItem(key);
+  }
+} catch {
+  // Browser storage may be disabled; app startup must still succeed.
+}
+
 // Pages has no server-side SPA fallback; fragment routes survive reloads.
 const router = import.meta.env.MODE === 'pages' ? createHashRouter(routes) : createBrowserRouter(routes);
 
