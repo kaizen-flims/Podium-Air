@@ -29,12 +29,12 @@ const CORS_RESPONSE: HeaderInfo[] = [
   set('Access-Control-Expose-Headers', '*'),
 ];
 
-function impersonate(origin: string): HeaderInfo[] {
-  return [set('Origin', origin), set('Referer', `${origin}/`), set('X-Origin', origin)];
+function impersonate(origin: string, safari = false): HeaderInfo[] {
+  return [set('Origin', origin), set('Referer', `${origin}/`), ...(!safari ? [set('X-Origin', origin)] : [])];
 }
 
 /** Rule ids 1–99 are this module's; it replaces all of them on every install and startup. */
-export function youtubeRules(initiatorDomains: string[]): Rule[] {
+export function youtubeRules(initiatorDomains: string[], safari = false): Rule[] {
   const rule = (
     id: number,
     urlFilter: string,
@@ -54,8 +54,8 @@ export function youtubeRules(initiatorDomains: string[]): Rule[] {
 
   return [
     // InnerTube, as the YouTube Music and YouTube web clients.
-    rule(1, '||music.youtube.com/youtubei/', impersonate('https://music.youtube.com')),
-    rule(2, '||www.youtube.com/youtubei/', impersonate('https://www.youtube.com')),
+    rule(1, '||music.youtube.com/youtubei/', impersonate('https://music.youtube.com', safari)),
+    rule(2, '||www.youtube.com/youtubei/', impersonate('https://www.youtube.com', safari)),
     // What YouTube.js reads to build a session and decipher stream URLs.
     rule(3, '||www.youtube.com/sw.js_data', null),
     rule(4, '||www.youtube.com/iframe_api', null),
@@ -79,7 +79,7 @@ export function initiatorDomainsFor(origins: string[]): string[] {
 export async function installRules(origins: string[]): Promise<void> {
   await browser.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: RULE_IDS,
-    addRules: youtubeRules(initiatorDomainsFor(origins)),
+    addRules: youtubeRules(initiatorDomainsFor(origins), import.meta.env.SAFARI),
   });
 }
 

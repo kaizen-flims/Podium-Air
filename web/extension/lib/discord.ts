@@ -537,7 +537,7 @@ export const DISCORD_ORIGINS = ['https://discord.com/*'];
 
 /** Opens the extension's connect page: the permission prompt only follows a click there. */
 export async function openConnectPage(): Promise<void> {
-  await browser.tabs.create({ url: browser.runtime.getURL('/discord.html') });
+  await browser.tabs.create({ url: new URL('discord.html', browser.runtime.getURL('/')).href });
 }
 
 /**

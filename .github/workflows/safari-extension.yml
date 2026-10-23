@@ -1,0 +1,42 @@
+name: Safari extension developer port
+on:
+  pull_request:
+    paths: ['web/extension/**', 'web/shared/**', '.github/workflows/safari-extension.yml']
+  push:
+    branches: ['feat/pwa-google-integration']
+    paths: ['web/extension/**', 'web/shared/**', '.github/workflows/safari-extension.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unsigned-wrapper:
+    runs-on: macos-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile
+      - name: Build Safari WebExtension resources
+        env:
+          PODIUM_AIR_SITE_ORIGINS: https://kaizen-flims.github.io
+        run: corepack pnpm --filter @bitchord/extension build:safari
+      - name: Generate Xcode wrapper without signing or installing
+        run: |
+          cp extension/safari/README.md extension/safari/package-safari.sh extension/.output/safari-mv3/
+          sh extension/.output/safari-mv3/package-safari.sh
+      - name: Compile unsigned macOS and iOS Simulator apps
+        run: python3 extension/safari/check-xcode.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: podium-air-safari-xcode-unsigned
+          path: |
+            web/extension/.output/Podium-Air-Safari-Xcode
+            web/extension/.output/safari-mv3
+          if-no-files-found: error

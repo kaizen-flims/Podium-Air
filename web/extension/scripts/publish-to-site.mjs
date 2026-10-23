@@ -28,7 +28,7 @@ function filesUnder(dir) {
   });
 }
 
-const builds = { chrome: 'chrome-mv3', firefox: 'firefox-mv3' };
+const builds = { chrome: 'chrome-mv3', firefox: 'firefox-mv3', safari: 'safari-mv3' };
 const files = {};
 let version;
 
@@ -36,7 +36,7 @@ for (const [browser, folder] of Object.entries(builds)) {
   const root = join(output, folder);
   const manifest = JSON.parse(readFileSync(join(root, 'manifest.json'), 'utf8'));
   if (version && manifest.version !== version) {
-    throw new Error(`Chrome and Firefox builds disagree on the version (${version} vs ${manifest.version}); rebuild both`);
+    throw new Error(`Extension builds disagree on the version (${version} vs ${manifest.version}); rebuild both`);
   }
   version = manifest.version;
 
@@ -46,8 +46,15 @@ for (const [browser, folder] of Object.entries(builds)) {
   for (const file of filesUnder(root)) {
     entries[`${parent}/${relative(root, file).split(sep).join('/')}`] = readFileSync(file);
   }
+  if (browser === 'safari') {
+    const support = fileURLToPath(new URL('../safari/', import.meta.url));
+    for (const name of ['README.md', 'package-safari.sh']) entries[`${parent}/${name}`] = readFileSync(join(support, name));
+    entries[`${parent}/LICENSE.txt`] = readFileSync(fileURLToPath(new URL('../../LICENSE', import.meta.url)));
+    entries[`${parent}/UPSTREAM-NOTICE.txt`] = readFileSync(fileURLToPath(new URL('../../UPSTREAM-NOTICE.txt', import.meta.url)));
+  }
   const name = `${parent}.zip`;
   writeFileSync(join(target, name), zipSync(entries, { level: 9 }));
+  if (browser === 'safari') writeFileSync(join(target, 'podium-air-extension-safari.zip'), zipSync(entries, { level: 9 }));
   files[browser] = name;
   console.log(`${folder} -> app/public/downloads/${name} (${parent}/, v${version})`);
 }

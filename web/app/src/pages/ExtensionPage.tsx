@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { useState, type ComponentType } from 'react';
-import { FaChrome, FaFirefoxBrowser } from 'react-icons/fa';
+import { FaChrome, FaFirefoxBrowser, FaSafari } from 'react-icons/fa';
 import { SiDiscord, SiSpotify, SiYoutubemusic } from 'react-icons/si';
 import type { Capability } from '@bitchord/shared/bridge';
 import { PageHeader } from '@/components/PageHeader';
@@ -12,7 +12,8 @@ import { PrefetchLink } from '@/components/PrefetchLink';
 import { DiscordIntegration, SpotifyIntegration } from './IntegrationSettings';
 import { settingsUi } from './settingsStyles';
 
-type Browser = 'chrome' | 'firefox';
+type Browser = 'chrome' | 'firefox' | 'safari';
+const browserName = (browser: Browser) => ({ chrome: 'Chrome', firefox: 'Firefox', safari: 'Safari' })[browser];
 
 interface Download {
   browser: Browser;
@@ -25,12 +26,12 @@ interface Download {
 }
 
 /**
- * The two builds, as published (extension.json): the zip and the folder in it
- * carry the version, "bitchord-extension-chrome (0.4.3)". Before that file
+ * The browser builds, as published (extension.json): the zip and the folder in it
+ * carry the version, "podium-air-extension-chrome (0.4.5)". Before that file
  * has loaded, the configured URLs and the unversioned names stand in.
  */
 function downloadsFor(published: PublishedExtension | null): Download[] {
-  const folder = (browser: Browser) => `bitchord-extension-${browser}${published ? ` (${published.version})` : ''}`;
+  const folder = (browser: Browser) => `podium-air-extension-${browser}${published ? ` (${published.version})` : ''}`;
   return [
     {
       browser: 'chrome',
@@ -68,11 +69,31 @@ function downloadsFor(published: PublishedExtension | null): Download[] {
         'Come back to this page: the version above updates on its own.',
       ],
     },
+    {
+      browser: 'safari',
+      title: 'Download Safari developer port',
+      detail: 'Experimental · Mac + Xcode required · not an iPhone installer',
+      href: published?.files.safari ? downloadUrl(published.files.safari) : config.extensionSafariUrl,
+      Icon: FaSafari,
+      steps: [
+        'This is an unsigned developer package, not an App Store app. Safari login and playback have not been verified.',
+        `Extract the zip on a Mac. Open the README inside ${folder('safari')}.`,
+        'Run the included package-safari.sh script in Terminal to generate the macOS/iOS Xcode project.',
+        'In Xcode, select your signing team and target device, then build and run the containing app.',
+        'Enable Podium Air in Safari Extensions and allow access to the Podium Air site and the music services you use.',
+        'Sign in to music.youtube.com in the same Safari profile, then reopen Podium Air in a normal Safari tab.',
+        'iPhone distribution requires a signed app through an Apple-supported distribution method. Home Screen web-app playback is not verified.',
+      ],
+      updateSteps: [
+        'Extract the new developer package on your Mac and follow its README to rebuild and sign the Safari app in Xcode.',
+        'Install the rebuilt app, enable its Safari extension, then reload Podium Air in Safari.',
+      ],
+    },
   ];
 }
 
 /** The browser this page is open in, to put its download first. */
-const currentBrowser: Browser = /firefox/i.test(navigator.userAgent) ? 'firefox' : 'chrome';
+const currentBrowser: Browser = /firefox|fxios/i.test(navigator.userAgent) ? 'firefox' : /safari/i.test(navigator.userAgent) && !/chrome|chromium|crios|edg|opr|android/i.test(navigator.userAgent) ? 'safari' : 'chrome';
 
 interface Integration {
   name: string;
@@ -115,7 +136,7 @@ export default function ExtensionPage() {
   const [updating, setUpdating] = useState(false);
   const downloads = [...DOWNLOADS].sort((a, b) => Number(b.browser === currentBrowser) - Number(a.browser === currentBrowser));
   const installedBrowser: Browser | null =
-    status.state === 'present' ? (status.extension.info.browser === 'firefox' ? 'firefox' : 'chrome') : null;
+    status.state === 'present' ? (status.extension.info.browser === 'safari' ? 'safari' : status.extension.info.browser === 'firefox' ? 'firefox' : 'chrome') : null;
   const forUpdate = DOWNLOADS.find((d) => d.browser === (installedBrowser ?? currentBrowser))!;
   const steps = DOWNLOADS.find((d) => d.browser === chosen)?.steps;
 
@@ -151,7 +172,7 @@ export default function ExtensionPage() {
               <span>Connection</span>
               <span className={settingsUi.value}>
                 {status.extension.bridge.transport === 'external' ? 'Direct' : 'Page relay'} ·{' '}
-                {status.extension.info.browser === 'firefox' ? 'Firefox' : 'Chromium'}
+                {status.extension.info.browser === 'safari' ? 'Safari · experimental' : status.extension.info.browser === 'firefox' ? 'Firefox' : 'Chromium'}
               </span>
             </div>
           )}
@@ -168,8 +189,8 @@ export default function ExtensionPage() {
               <span className={settingsUi.downloadText}>
                 <span className={settingsUi.downloadTitle}>Update to v{update.latest.version}</span>
                 <span className={settingsUi.downloadDetail}>
-                  You have v{update.installed}. Download the new {forUpdate.browser === 'firefox' ? 'Firefox' : 'Chrome'}{' '}
-                  build, then reload the extension.
+                  You have v{update.installed}. Download the new {browserName(forUpdate.browser)}{' '}
+                  {forUpdate.browser === 'safari' ? 'developer port, then rebuild it in Xcode.' : 'build, then reload the extension.'}
                 </span>
               </span>
               <ChevronRight size={16} strokeWidth={2.4} className={settingsUi.chevron} />

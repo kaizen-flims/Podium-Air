@@ -20,3 +20,8 @@ Third-party assets and dependencies retain their respective rights and licenses.
 The imported SF Pro Display font binaries require provenance/distribution review
 before a public release, as noted in the repository's THIRD_PARTY_NOTICES.md.
 No production deployment or release is authorized by this integration.
+
+Safari developer port: Podium Air build configuration, page relay, compatibility
+guards, developer packaging and download page. Safari playback remains unverified.
+Safari brand glyph: Font Awesome (https://fontawesome.com/v4/icon/safari), served
+locally via the existing react-icons dependency. Brand marks belong to their owners.

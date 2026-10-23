@@ -1,6 +1,6 @@
 /**
- * Mobile browsers can't install the extension, so they get the Android app
- * banner instead of the install prompt (prompt §1).
+ * Mobile browser detection for the app banner. Extension support is checked
+ * separately; the Safari developer port is not an Android installer.
  */
 export function isMobileBrowser(): boolean {
   const uaData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData;

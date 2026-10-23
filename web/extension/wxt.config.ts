@@ -11,29 +11,31 @@ const STORE_BUILD = process.env.BITCHORD_STORE_BUILD === '1';
  * flag: on for the site's own zips, off for a Web Store upload unless
  * DISCORD_PRESENCE=1 says otherwise.
  */
-const DISCORD_PRESENCE = process.env.DISCORD_PRESENCE ? process.env.DISCORD_PRESENCE === '1' : !STORE_BUILD;
+const discordEnabled = process.env.DISCORD_PRESENCE ? process.env.DISCORD_PRESENCE === '1' : !STORE_BUILD;
+// Safari's initial port excludes the unverified Discord token integration.
+const discordFor = (browser: string) => browser !== 'safari' && discordEnabled;
 const DISCORD_ORIGINS = ['https://discord.com/*'];
 
 const devPublicKey = readFileSync(new URL('./dev-key/public-key.txt', import.meta.url), 'utf8').trim();
 
 export default defineConfig({
   manifestVersion: 3,
-  vite: () => ({
+  vite: (env) => ({
     define: {
       // Checked against every sender at runtime (entrypoints/background.ts).
       __SITE_ORIGINS__: JSON.stringify(SITE_ORIGINS),
-      __DISCORD_PRESENCE__: JSON.stringify(DISCORD_PRESENCE),
+      __DISCORD_PRESENCE__: JSON.stringify(discordFor(env.browser)),
     },
   }),
   manifest: ({ browser }) => ({
     name: 'Podium Air',
-    description: 'Connects the Podium Air web player to YouTube Music, Spotify and Discord.',
+    description: browser === 'safari' ? 'Experimental Podium Air Safari companion: YouTube Music, Spotify and lyrics.' : 'Connects the Podium Air web player to YouTube Music, Spotify and Discord.',
     homepage_url: SITE_ORIGINS[0],
     // `cookies` reads the YouTube session for signed-in requests (phase 5);
     // the cookies themselves never leave the extension (lib/ytAuth.ts).
     // `scripting` reads the Discord token from a discord.com tab, and only on
     // the user's "Connect Discord" (lib/discord.ts).
-    permissions: ['storage', 'declarativeNetRequest', 'cookies', ...(DISCORD_PRESENCE ? ['scripting'] : [])],
+    permissions: ['storage', browser === 'safari' ? 'declarativeNetRequestWithHostAccess' : 'declarativeNetRequest', 'cookies', ...(discordFor(browser) ? ['scripting'] : [])],
     // YouTube (phases 3 and 5) and Spotify (phase 9; the sp_dc cookie is read
     // and used here only, lib/spotify.ts). The site's own origins are listed
     // because header rules need host access to the initiator as well as the
@@ -53,7 +55,7 @@ export default defineConfig({
     // Granted at use time, on the extension's own pages: lyric providers the
     // page can't reach itself (grant.html), and discord.com when the user
     // connects Discord (discord.html).
-    optional_host_permissions: [...LYRIC_ORIGINS.map(patternOf), ...(DISCORD_PRESENCE ? DISCORD_ORIGINS : [])],
+    optional_host_permissions: [...LYRIC_ORIGINS.map(patternOf), ...(discordFor(browser) ? DISCORD_ORIGINS : [])],
     ...(browser === 'firefox'
       ? {
           browser_specific_settings: {
@@ -64,7 +66,7 @@ export default defineConfig({
             },
           },
         }
-      : {
+      : browser === 'safari' ? {} : {
           // Chromium pages message the extension directly.
           externally_connectable: { matches: matchPatternsFor(SITE_ORIGINS) },
           // Pins the unpacked extension's id so the page can address it
@@ -74,8 +76,14 @@ export default defineConfig({
         }),
   }),
   // The connect page only exists in builds that include Discord.
-  filterEntrypoints: DISCORD_PRESENCE ? undefined : ['background', 'popup', 'grant', 'relay'],
+  filterEntrypoints: discordEnabled ? undefined : ['background', 'popup', 'grant', 'relay'],
   hooks: {
+    'entrypoints:resolved': (wxt, entrypoints) => {
+      if (wxt.config.browser === 'safari') {
+        const index = entrypoints.findIndex((entry) => entry.name === 'discord');
+        if (index !== -1) entrypoints.splice(index, 1);
+      }
+    },
     // Firefox only: the relay content script runs on the site's origins.
     'build:manifestGenerated': (wxt, manifest) => {
       for (const script of manifest.content_scripts ?? []) {

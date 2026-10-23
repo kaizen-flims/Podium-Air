@@ -41,11 +41,11 @@ export function AppShell() {
   const fullScreen = useUi((s) => s.fullScreen);
 
   let banner = null;
-  if (mobile) {
+  if (mobile && /Android/i.test(navigator.userAgent) && extension.state !== 'present') {
     banner = (
       <Banner
         title="Podium Air is better in the app."
-        detail="Phone browsers can’t run the Podium Air extension. The Android app has everything."
+        detail="Chrome on Android cannot install this extension. Use the Android app for the full experience."
         action={
           <a className={bannerButtonClass} href={config.androidAppUrl} target="_blank" rel="noreferrer">
             Get the App

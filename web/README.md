@@ -108,3 +108,20 @@ start URL are relative. Cache cleanup is scoped to this base path.
 The preview workflow trusts only `https://kaizen-flims.github.io` for its companion
 extension build. The standard local build keeps its localhost-only default.
 Google login and native YouTube Music integration remain deferred.
+
+## Experimental Safari developer port
+
+The Extension page offers Safari alongside Chrome and Firefox, using the existing
+Font Awesome Safari brand icon (https://fontawesome.com/v4/icon/safari), bundled
+through react-icons under its existing dependency licenses. No new logo is generated.
+
+`pnpm build:site` and `pnpm build:pages` also build/package Safari MV3 resources.
+The Safari ZIP includes the existing P assets, GPL license/credits, a README and
+`package-safari.sh`. It requires a Mac with Xcode to generate, sign and install
+the containing macOS/iOS application. It is not a ready-to-install iPhone ZIP.
+
+See [Safari port instructions and known limitations](extension/safari/README.md).
+Linux checks cover the packaged worker, missing Safari APIs, trusted-origin relay,
+manifest and ZIP integrity; they do not prove Safari network/media compatibility.
+A macOS CI workflow generates the native Xcode wrapper and attempts unsigned
+macOS and iOS Simulator builds, without publishing or signing a release.

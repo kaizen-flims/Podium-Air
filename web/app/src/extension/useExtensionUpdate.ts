@@ -11,7 +11,7 @@ export function downloadUrl(name: string): string {
 export interface PublishedExtension {
   version: string;
   builtAt: string;
-  files: { chrome: string; firefox: string };
+  files: { chrome: string; firefox: string; safari?: string };
 }
 
 export type ExtensionUpdate =
