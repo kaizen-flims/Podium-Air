@@ -20,6 +20,9 @@ Changes for audit distribution:
 - Default upstream Listen Together server removed; requires explicit configuration.
 - Phone pairing requires a random per-session token, rejects cross-origin requests,
   sets a same-site HttpOnly cookie, limits request sizes and times out stalled clients.
+- QR generation uses the existing ZXing dependency, with decode round-trip tests
+  for long pairing-token URLs (the handwritten upstream generator does not handle
+  QR multi-block interleaving/version metadata).
 - Playback mutations require POST; wildcard CORS removed; async search now completes
   before its socket closes. Pairing token expires on dialog close/server stop.
 
