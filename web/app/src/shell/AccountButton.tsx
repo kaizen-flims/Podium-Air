@@ -1,6 +1,5 @@
 import { ArrowUpRight, ChevronsUpDown } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { GoogleSidebarAccount } from '@/google/GoogleAccount';
 import { Menu, MenuHeader, MenuItem, MenuSeparator } from '@/components/Menu';
 import { useRefreshYtAuth, useSelectChannel, useSetConnected, useYtAuth } from '@/extension/useYtAuth';
 
@@ -37,8 +36,7 @@ export function AccountButton() {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const close = useCallback(() => setAnchor(null), []);
 
-  if (status.state === 'checking') return null;
-  if (status.state !== 'ready') return <GoogleSidebarAccount />;
+  if (status.state !== 'ready') return null;
   const { auth } = status;
 
   if (!auth.browserSignedIn) {

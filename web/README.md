@@ -108,11 +108,3 @@ start URL are relative. Cache cleanup is scoped to this base path.
 The preview workflow trusts only `https://kaizen-flims.github.io` for its companion
 extension build. The standard local build keeps its localhost-only default.
 Google login and native YouTube Music integration remain deferred.
-
-## Google integration development
-
-The Google account and optional read-only owned-playlist connection is documented
-in [docs/google-integration.md](docs/google-integration.md). It requires a registered
-web OAuth client before activation; set the public client id through
-`VITE_GOOGLE_CLIENT_ID` (Pages uses the `PODIUM_AIR_GOOGLE_CLIENT_ID` repository
-variable). It does not replace the extension's YouTube Music playback session.

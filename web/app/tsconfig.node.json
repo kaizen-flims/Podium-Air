@@ -13,8 +13,7 @@
       "@/*": [
         "./src/*"
       ]
-    },
-    "jsx": "react-jsx"
+    }
   },
   "include": [
     "vite.config.ts",

@@ -55,26 +55,3 @@ all 119 upstream tests passed again. The Pages subpath was also exercised in
 headless Chromium with static-only serving, including hash navigation and an
 offline reload. Publishing still requires Pages to be enabled in repository
 settings and the deployment workflow to finish; no live URL is claimed here.
-
-## Google account integration (development branch)
-
-Implemented an independent Google Identity Services browser token flow, optional
-read-only YouTube owned-playlist consent, in-memory account/session handling,
-Settings/sidebar controls and a paginated owned-playlist page. Existing native
-and extension YouTube Music cookie/session/playback code is unchanged.
-
-- Workspace TypeScript checks: passed.
-- Vitest: 12 test files, 138 tests passed (119 upstream, 19 added checks).
-- New checks cover optional scopes, denied/partial grants, popup failures, invalid
-  responses, expiry, disconnect/profile/library races, API headers/error handling,
-  response redaction and playlist mapping. Mocked React flows verify visible
-  identity/consent/library/disconnect behavior and private-query cache removal.
-- Normal build and Pages build: passed, including both browser-extension packages.
-- Static PWA shell checks: passed for `/` and `/Podium-Air/`.
-- No real Google account was authenticated or granted access during testing.
-  Google Cloud Console was unavailable from this cloud browser. Activation needs
-  a real registered web client id and a configured Google consent/API project.
-- Safari/iOS live authorization and extension-free playback are not verified or
-  claimed. Google OAuth does not produce a native YouTube Music cookie session.
-
-Detailed design and activation steps: `docs/google-integration.md`.
