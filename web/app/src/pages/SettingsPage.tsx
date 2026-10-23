@@ -169,8 +169,8 @@ export default function SettingsPage() {
         </section>
         <h2 className={settingsUi.sectionHeader}>About Podium Air</h2>
         <p className={settingsUi.footer}>
-          Made with love by Prem. Based on{' '}
-          <a href="https://github.com/kushagrasinghx/BitChord" target="_blank" rel="noreferrer">BitChord by Kushagra Singh and contributors</a>.
+          Made with love by Prem. Upstream:{' '}
+          <a href="https://github.com/kushagrasinghx/BitChord" target="_blank" rel="noreferrer">BitChord</a>.
           {' '}<a href={`${import.meta.env.BASE_URL}LICENSE.txt`}>GPLv3 license</a> ·{' '}
           <a href={`${import.meta.env.BASE_URL}UPSTREAM-NOTICE.txt`}>Upstream attribution</a>
           {' '}· <a href={`${import.meta.env.BASE_URL}about.html`}>About the web app</a>
