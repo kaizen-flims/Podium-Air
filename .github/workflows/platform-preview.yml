@@ -30,38 +30,81 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: false
-      - name: Verify preserved identity and resource integrity
-        run: |
-          python3 tools/verify_identity.py
-          python3 tools/test_intel_beat_model.py
-      - name: Android tests, preview APK and unsigned release validation
-        run: bash gradlew :app:testDevDebugUnitTest :app:assembleDevDebug :app:assembleProdRelease --stacktrace
-      - name: Verify APK application identity
+      - name: Restore persistent separate audit signing key
+        id: audit-signing-key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: podium-air-android-audit-signing-v1
+          fail-on-cache-miss: true
+      - name: Verify persistent audit signing key
         shell: bash
         run: |
-          aapt=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -1)
-          apk=$(find app/build/outputs/apk/dev/debug -name '*.apk' | head -1)
-          "$aapt" dump badging "$apk" > apk-badging.txt
-          grep -q "name='com.podium.air.dev'" apk-badging.txt
-          grep -q 'Podium Air' apk-badging.txt
-          release_apk=$(find app/build/outputs/apk/prod/release -name '*unsigned.apk' | head -1)
-          "$aapt" dump badging "$release_apk" > release-apk-badging.txt
-          grep -q "name='com.podium.air'" release-apk-badging.txt
-          grep -q 'Podium Air' release-apk-badging.txt
+          set -euo pipefail
+          test -s "$HOME/.android/debug.keystore"
+          keytool -exportcert -keystore "$HOME/.android/debug.keystore" \
+            -storepass android -alias androiddebugkey > audit-certificate.der
+          sha256sum audit-certificate.der | cut -d ' ' -f 1 > audit-expected-certificate.txt
+          grep -Fxq 'f54546718dc928e7d68d745cff4741c8a64f088564cd35c515a81d870c94a9ac' audit-expected-certificate.txt
+      - name: Verify preserved identity and resource integrity
+        run: |
+          python3 -m pip install --disable-pip-version-check Pillow
+          python3 tools/verify_identity.py
+          python3 tools/verify_android_audit.py
+          python3 tools/test_intel_beat_model.py
+      # Fresh JVMs keep R8's retained heap away from the next APK packager.
+      # A single worker also avoids packaging all ABI splits concurrently.
+      - name: Android unit tests
+        run: bash gradlew :app:testDevDebugUnitTest --no-daemon --no-parallel --max-workers=1 --stacktrace
+      - name: Build optimized isolated audit APK
+        run: >-
+          bash gradlew :app:assembleProdAudit --no-daemon --no-parallel --max-workers=1
+          -Pkotlin.compiler.execution.strategy=in-process
+          '-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true'
+          --stacktrace
+      - name: Verify audit APK identity and independent certificate
+        shell: bash
+        run: |
+          set -euxo pipefail
+          apksigner=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
+          aapt="$(dirname "$apksigner")/aapt"
+          apk=$(find app/build/outputs/apk/prod/audit -name '*universal*.apk' | head -1)
+          test -n "$apk"
+          reports=dist/android-audit-diagnostics
+          mkdir -p "$reports"
+          cp "$apk" "$reports/Podium-Air-Audit-2-v1.8.1.apk"
+          cp audit-expected-certificate.txt "$reports/"
+          "$aapt" dump badging "$apk" | tee "$reports/audit-apk-badging.txt"
+          "$apksigner" verify --print-certs "$apk" | tee "$reports/audit-signing-verification.txt"
+          "$aapt" dump xmltree "$apk" AndroidManifest.xml > "$reports/audit-manifest.txt"
+          grep -Fq "package: name='com.podium.air.audit2'" "$reports/audit-apk-badging.txt"
+          grep -Fq "application-label:'Podium Air Audit 2'" "$reports/audit-apk-badging.txt"
+          grep -Fqi "$(cat audit-expected-certificate.txt)" "$reports/audit-signing-verification.txt"
+          if grep -Fqi 'fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2' "$reports/audit-signing-verification.txt"; then
+            echo 'Audit APK must never use the production signing certificate'
+            exit 1
+          fi
+          grep -Fq 'com.podium.air.audit2.fileprovider' "$reports/audit-manifest.txt"
+          mkdir -p dist/android-audit
+          cp "$reports/"* dist/android-audit/
+          sha256sum dist/android-audit/*.apk > dist/android-audit/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: podium-air-android-preview
-          path: |
-            app/build/outputs/apk/dev/debug/*.apk
-            apk-badging.txt
+          name: podium-air-android-audit
+          path: dist/android-audit/
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
+        if: failure()
         with:
-          name: podium-air-android-unsigned-release-review
-          path: |
-            app/build/outputs/apk/prod/release/*unsigned.apk
-            release-apk-badging.txt
-          if-no-files-found: error
+          name: podium-air-android-audit-UNVERIFIED-diagnostics
+          path: dist/android-audit-diagnostics/
+          if-no-files-found: warn
+      - name: Validate unsigned production build independently
+        run: >-
+          bash gradlew :app:assembleProdRelease --no-daemon --no-parallel --max-workers=1
+          -Pkotlin.compiler.execution.strategy=in-process
+          '-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true'
+          --stacktrace
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -11,6 +11,8 @@ permissions:
 
 jobs:
   build-debug:
+    # PRs build the isolated release-like audit APK in platform-preview.yml.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     concurrency:
       group: podium-debug-${{ github.head_ref || github.ref_name }}
       cancel-in-progress: true

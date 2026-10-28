@@ -163,6 +163,8 @@ fun FrostedTopBar(
     /** Source sampled by floating top-bar surfaces when liquid glass is off. */
     backButtonHazeState: HazeState? = null,
     trailingTitle: String? = null,
+    /** Home has its own large mark; hide only the duplicate leading mark there. */
+    showAppMark: Boolean = true,
     onBack: (() -> Unit)? = null,
     refreshing: Boolean = false,
     // A lambda, not a value: the drag changes every frame, and reading it in
@@ -306,14 +308,13 @@ fun FrostedTopBar(
                         )
                     }
                 }
-            } else if (useFloatingChrome) {
+            } else if (showAppMark && useFloatingChrome) {
                 FloatingAppMark(
-                    hazeState = backButtonHazeState,
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = PAGE_GUTTER),
                 )
-            } else {
+            } else if (showAppMark) {
                 Row(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
@@ -323,7 +324,7 @@ fun FrostedTopBar(
                     Image(
                         painter = painterResource(R.drawable.podium_air_ui_mono),
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp).clip(CircleShape).background(Color.Black),
+                        modifier = Modifier.size(40.dp),
                     )
                     // The dev flavor gets its own applicationId so it can sit
                     // installed next to the prod build; this badge is the
@@ -358,7 +359,7 @@ fun FrostedTopBar(
                     Spacer(Modifier.width(ACCESSORY_GAP))
                 }
                 if (useFloatingChrome) {
-                    ArtworkPageActions(hazeState = backButtonHazeState, content = actions)
+                    ArtworkPageActions(content = actions)
                 } else {
                     actions()
                 }
@@ -369,35 +370,25 @@ fun FrostedTopBar(
     }
 }
 
-/** Root-page app mark: a navbar-matched logo circle plus an external Dev badge. */
-@OptIn(ExperimentalHazeMaterialsApi::class)
+/** Larger Chrome mark with an external Dev badge. */
 @Composable
 private fun FloatingAppMark(
-    hazeState: HazeState?,
     modifier: Modifier = Modifier,
 ) {
-    val reduceDynamicBlur by AppSettings.reduceDynamicBlur.collectAsStateWithLifecycle()
-    val useLiquidGlass = LocalLiquidGlassEnabled.current && isGlassSupported()
-    val contentColor = if (useLiquidGlass && !reduceDynamicBlur) {
-        glassContentColor()
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(44.dp)
-                .then(artworkPageSurface(shape = CircleShape, hazeState = hazeState)),
+                .size(52.dp)
+                .clipToBounds(),
             contentAlignment = Alignment.Center,
         ) {
             Image(
                 painter = painterResource(R.drawable.podium_air_ui_mono),
                 contentDescription = null,
-                modifier = Modifier.size(24.dp).clip(CircleShape).background(Color.Black),
+                modifier = Modifier.size(52.dp),
             )
         }
         if (BuildConfig.FLAVOR == "dev") {
@@ -442,16 +433,14 @@ private fun ArtworkPageBackButton(
     }
 }
 
-/** One shared pill for every action at the right of a floating top bar. */
+/** Bare action row: the profile photo has no surrounding glass surface. */
 @Composable
 private fun ArtworkPageActions(
-    hazeState: HazeState?,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     Row(
         modifier = modifier
-            .then(artworkPageSurface(shape = CircleShape, hazeState = hazeState))
             // Keep the right edge fixed while a new action opens room to its
             // left. The surface itself therefore grows instead of jumping to
             // its new width in a single frame.
@@ -571,16 +560,14 @@ fun TopBarAccountButton(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(AVATAR_SIZE)
-                    .clip(CircleShape)
-                    .thumbnailBorder(CircleShape),
+                    .clip(CircleShape),
             )
         } else {
             Box(
                 modifier = Modifier
                     .size(AVATAR_SIZE)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .thumbnailBorder(CircleShape),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -681,4 +668,4 @@ private val PUCK_OVERSHOOT = 20.dp
  * Smaller than an icon's 24dp box: a filled circle carries more weight than a
  * glyph does, and at 24 it sat heavier in the bar than the wordmark opposite it.
  */
-private val AVATAR_SIZE = 28.dp
+private val AVATAR_SIZE = 44.dp

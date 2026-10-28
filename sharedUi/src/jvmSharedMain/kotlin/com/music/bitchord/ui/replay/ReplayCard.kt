@@ -1,5 +1,8 @@
 package com.music.bitchord.ui.replay
 
+import com.music.bitchord.ui.brandLogoResource
+import com.music.bitchord.ui.useChromeBranding
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -146,10 +149,10 @@ fun ReplayCreditCard(
                 )
                 Spacer(Modifier.width(10.dp))
                 Icon(
-                    painter = painterResource(Res.drawable.ic_logo),
+                    painter = painterResource(brandLogoResource),
                     contentDescription = null,
                     tint = Color.Unspecified,
-                    modifier = Modifier.size(22.dp),
+                    modifier = Modifier.size(if (useChromeBranding) 36.dp else 22.dp),
                 )
             }
 
