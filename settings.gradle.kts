@@ -36,6 +36,11 @@ val androidSdk: String? = file("local.properties")
 
 if (androidSdk != null && file(androidSdk).isDirectory) {
     include(":app")
+    if (providers.gradleProperty("podiumTv").orNull == "true") {
+        include(":tv", ":tvShared", ":tvSharedUi")
+        project(":tvShared").projectDir = file("tv/runtime/shared")
+        project(":tvSharedUi").projectDir = file("tv/runtime/sharedUi")
+    }
 } else {
     logger.lifecycle("No Android SDK found — building the desktop targets only.")
 }
