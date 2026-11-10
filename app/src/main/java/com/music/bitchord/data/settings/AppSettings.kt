@@ -485,6 +485,8 @@ object AppSettings {
 
     /** Optional edge-to-edge artwork on album and playlist detail pages. */
     val fullBleedDetailArtwork = MutableStateFlow(false)
+    val playerTheme = MutableStateFlow(PlayerTheme.DEFAULT)
+    val disableBlendEffects = MutableStateFlow(false)
 
     /**
      * Puts v1.5's backdrop back on the player: four quantised blobs drifting
@@ -903,6 +905,10 @@ object AppSettings {
         signatureApiUrl.value = normalizeSignatureApiUrl(prefs.getString(KEY_SIGNATURE_API_URL, "").orEmpty())
         fullBleedArtwork.value = prefs.getBoolean(KEY_FULL_BLEED_ARTWORK, true)
         fullBleedDetailArtwork.value = prefs.getBoolean(KEY_FULL_BLEED_DETAIL_ARTWORK, false)
+        playerTheme.value = runCatching {
+            PlayerTheme.valueOf(prefs.getString(KEY_PLAYER_THEME, PlayerTheme.DEFAULT.name) ?: PlayerTheme.DEFAULT.name)
+        }.getOrDefault(PlayerTheme.DEFAULT)
+        disableBlendEffects.value = prefs.getBoolean(KEY_DISABLE_BLEND_EFFECTS, false)
         legacyMeshGradient.value = prefs.getBoolean(KEY_LEGACY_MESH_GRADIENT, false)
         lastPlayerScreen.value = runCatching {
             LastPlayerScreen.valueOf(
@@ -1517,6 +1523,16 @@ object AppSettings {
         prefs.edit().putBoolean(KEY_FULL_BLEED_DETAIL_ARTWORK, value).apply()
     }
 
+    fun setPlayerTheme(value: PlayerTheme) {
+        playerTheme.value = value
+        prefs.edit().putString(KEY_PLAYER_THEME, value.name).apply()
+    }
+
+    fun setDisableBlendEffects(value: Boolean) {
+        disableBlendEffects.value = value
+        prefs.edit().putBoolean(KEY_DISABLE_BLEND_EFFECTS, value).apply()
+    }
+
     fun setLegacyMeshGradient(value: Boolean) {
         legacyMeshGradient.value = value
         prefs.edit().putBoolean(KEY_LEGACY_MESH_GRADIENT, value).apply()
@@ -2102,6 +2118,8 @@ object AppSettings {
     private const val KEY_SIGNATURE_API_URL = "signature_api_url"
     private const val KEY_FULL_BLEED_ARTWORK = "full_bleed_artwork"
     private const val KEY_FULL_BLEED_DETAIL_ARTWORK = "full_bleed_detail_artwork"
+    private const val KEY_PLAYER_THEME = "player_theme"
+    private const val KEY_DISABLE_BLEND_EFFECTS = "disable_blend_effects"
     private const val KEY_LEGACY_MESH_GRADIENT = "legacy_mesh_gradient"
     private const val KEY_LAST_PLAYER_SCREEN = "last_player_screen"
     private const val KEY_SYNCED_LYRICS = "synced_lyrics"
