@@ -217,6 +217,7 @@ fun SettingsScreen(
     val reduceAnimation by AppSettings.reduceAnimation.collectAsStateWithLifecycle()
     val reduceDynamicBlur by AppSettings.reduceDynamicBlur.collectAsStateWithLifecycle()
     val liquidGlass by AppSettings.liquidGlass.collectAsStateWithLifecycle()
+    val glassPerformance by AppSettings.glassPerformance.collectAsStateWithLifecycle()
     val liquidGlassSupported = isGlassSupported()
     val lyricsBlur by AppSettings.lyricsBlur.collectAsStateWithLifecycle()
     val animatedCanvas by AppSettings.animatedCanvas.collectAsStateWithLifecycle()
@@ -839,6 +840,27 @@ fun SettingsScreen(
                     },
                     onClick = { AppSettings.setLiquidGlass(!liquidGlass) },
                 )
+            }
+            if (liquidGlass) {
+                val glassPerformanceTitle = stringResource(R.string.glass_performance)
+                row(glassPerformanceTitle, "glass", "performance", "frosted", "refraction", "lag") {
+                    SettingsRow(
+                        icon = Icons.Rounded.Speed,
+                        title = glassPerformanceTitle,
+                        subtitle = stringResource(R.string.glass_performance_subtitle),
+                        trailing = {
+                            Switch(
+                                checked = glassPerformance,
+                                onCheckedChange = AppSettings::setGlassPerformance,
+                                colors = SwitchDefaults.colors(
+                                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                    checkedBorderColor = MaterialTheme.colorScheme.primary,
+                                ),
+                            )
+                        },
+                        onClick = { AppSettings.setGlassPerformance(!glassPerformance) },
+                    )
+                }
             }
             // Left out where the player won't honour it: a window too wide for
             // the player to fill and too narrow to stand a page beside it keeps
