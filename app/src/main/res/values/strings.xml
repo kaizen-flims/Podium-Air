@@ -26,6 +26,7 @@
     <string name="play">Play</string>
     <string name="explore">Explore</string>
     <string name="listen_now">Listen Now</string>
+    <string name="content_preferences" translatable="false">Content preferences</string>
     <string name="downloads">Downloads</string>
     <string name="downloaded_songs">Downloaded songs</string>
     <string name="local_music">Local Music</string>
