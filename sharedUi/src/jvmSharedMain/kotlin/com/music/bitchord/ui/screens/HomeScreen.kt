@@ -144,6 +144,10 @@ fun HomeScreen(
     leadHero: Boolean = true,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
+    hideRecents: Boolean = false,
+    hideHomeVideos: Boolean = false,
+    hideTopPicks: Boolean = false,
+    hideHomeMoods: Boolean = false,
 ) {
     val recentsViewType by AppUi.host.homeRecentsViewType.collectAsStateWithLifecycle()
 
@@ -198,7 +202,13 @@ fun HomeScreen(
                     // Recently Played lands, every real shelf must retain its
                     // compact-card layout instead of briefly becoming a hero.
                     itemsIndexedShelves(
-                        shelves = state.data,
+                        shelves = state.data.filterNot { shelf ->
+                            val title = shelf.title.trim()
+                            (hideRecents && title.equals(RECENTS_TITLE, ignoreCase = true)) ||
+                                (hideHomeVideos && title.contains("video", ignoreCase = true)) ||
+                                (hideTopPicks && title.contains("Top Picks for You", ignoreCase = true)) ||
+                                (hideHomeMoods && title.contains("Find Your Mood", ignoreCase = true))
+                        },
                         onItemClick = onItemClick,
                         onItemLongPress = onItemLongPress,
                         currentSong = currentSong,
