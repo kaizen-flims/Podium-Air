@@ -148,6 +148,7 @@ fun HomeScreen(
     hideHomeVideos: Boolean = false,
     hideTopPicks: Boolean = false,
     hideHomeMoods: Boolean = false,
+    squareVideoThumbnails: Boolean = false,
 ) {
     val recentsViewType by AppUi.host.homeRecentsViewType.collectAsStateWithLifecycle()
 
@@ -215,6 +216,7 @@ fun HomeScreen(
                         isPlaying = isPlaying,
                         firstIsHero = leadHero && !recentlyPlayedLoading,
                         recentsViewType = recentsViewType,
+                        squareVideoThumbnails = squareVideoThumbnails,
                         onRecentsViewTypeToggle = {
                             AppUi.host.setHomeRecentsViewType(
                                 if (recentsViewType == LibraryViewType.LIST) {
@@ -263,6 +265,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexedShelves(
     isPlaying: Boolean,
     firstIsHero: Boolean = true,
     recentsViewType: LibraryViewType,
+    squareVideoThumbnails: Boolean,
     onRecentsViewTypeToggle: () -> Unit,
 ) {
     shelves.forEachIndexed { index, shelf ->
@@ -285,6 +288,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.itemsIndexedShelves(
                     onItemLongPress = onItemLongPress,
                     currentSong = currentSong,
                     isPlaying = isPlaying,
+                    squareThumbnails = squareVideoThumbnails && shelf.title.contains("video", ignoreCase = true),
                 )
             } else {
                 Shelf(
@@ -760,6 +764,7 @@ private fun HeroShelf(
     onItemLongPress: ((ShelfItem) -> Unit)? = null,
     currentSong: Song? = null,
     isPlaying: Boolean = false,
+    squareThumbnails: Boolean = false,
 ) {
     Column(Modifier.padding(bottom = 26.dp)) {
         SectionHeader(shelf.title, shelf.subtitle)
@@ -783,6 +788,7 @@ private fun HeroShelf(
                         modifier = Modifier.width(cardWidth),
                         isCurrent = isCurrentItem(item),
                         isPlaying = isCurrentItem(item) && isPlaying,
+                        squareThumbnail = squareThumbnails,
                     )
                 }
             }
@@ -800,10 +806,11 @@ private fun HeroCard(
     modifier: Modifier = Modifier,
     isCurrent: Boolean = false,
     isPlaying: Boolean = false,
+    squareThumbnail: Boolean = false,
 ) {
     Box(
         modifier = modifier
-            .aspectRatio(HERO_CARD_RATIO)
+            .aspectRatio(if (squareThumbnail) 1f else HERO_CARD_RATIO)
             .clip(RoundedCornerShape(18.dp))
             .thumbnailBorder(RoundedCornerShape(18.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
