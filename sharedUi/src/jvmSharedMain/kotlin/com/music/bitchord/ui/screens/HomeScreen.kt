@@ -182,7 +182,7 @@ fun HomeScreen(
             }
             when (state) {
                 is UiState.Loading -> {
-                    if (recentlyPlayedLoading) {
+                    if (recentlyPlayedLoading && !hideRecents) {
                         recentlyPlayedSkeleton(listLayout = recentsViewType == LibraryViewType.LIST)
                         // Recents owns the leading layout while its request is
                         // pending, so the feed behind it starts with ordinary
@@ -196,7 +196,7 @@ fun HomeScreen(
                     MessageState(state.message, actionLabel = stringResource(Res.string.retry), onAction = onRetry)
                 }
                 is UiState.Success -> {
-                    if (recentlyPlayedLoading) {
+                    if (recentlyPlayedLoading && !hideRecents) {
                         recentlyPlayedSkeleton(listLayout = recentsViewType == LibraryViewType.LIST)
                     }
                     // The loading skeleton already owns the hero slot. Until
@@ -214,7 +214,7 @@ fun HomeScreen(
                         onItemLongPress = onItemLongPress,
                         currentSong = currentSong,
                         isPlaying = isPlaying,
-                        firstIsHero = leadHero && !recentlyPlayedLoading,
+                        firstIsHero = leadHero && (!recentlyPlayedLoading || hideRecents),
                         recentsViewType = recentsViewType,
                         squareVideoThumbnails = squareVideoThumbnails,
                         onRecentsViewTypeToggle = {
