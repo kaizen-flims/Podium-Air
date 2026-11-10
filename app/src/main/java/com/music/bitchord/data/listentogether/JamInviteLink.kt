@@ -20,7 +20,7 @@ object JamInviteLink {
 
     private const val EXTRA_CONSUMED = "bitchord.jamInviteConsumed"
     private const val HOST = "bitchord.kushagrasingh.in"
-    private const val CUSTOM_SCHEME = "bitchord"
+    private const val CUSTOM_SCHEME = "Podium Air"
     private const val CUSTOM_HOST = "party"
 
     private val _pending = MutableStateFlow<ParsedJamInvite?>(null)

@@ -75,7 +75,7 @@ import kotlin.coroutines.coroutineContext
 @UnstableApi
 object AudioCache {
 
-    private const val TAG = "BitChord"
+    private const val TAG = "Podium Air"
 
     /**
      * The disk budget, straight from [AppSettings] — 512MB by default, roughly
@@ -553,7 +553,7 @@ object AudioCache {
      * resolved at all.
      */
     fun originOf(uri: Uri): Origin? {
-        if (!::cache.isInitialized || uri.scheme != "bitchord") return null
+        if (!::cache.isInitialized || uri.scheme != "Podium Air") return null
         val key = keyFactory.buildCacheKey(DataSpec(uri))
         return runCatching { cache.getContentMetadata(key).get(META_ORIGIN, null as String?) }
             .getOrNull()
@@ -729,7 +729,7 @@ object AudioCache {
         if (playedIds.size > MAX_NOTED_SONGS) playedIds.clear()
         playedIds += song.videoId
         noteSongs(listOf(song))
-        if (!::cache.isInitialized || uri?.scheme != "bitchord") return
+        if (!::cache.isInitialized || uri?.scheme != "Podium Air") return
         scope.launch {
             val key = keyFactory.buildCacheKey(DataSpec(uri))
             runCatching {
@@ -759,7 +759,7 @@ object AudioCache {
      */
     fun recordServed(spec: DataSpec, servedUrl: String) {
         if (!::cache.isInitialized) return
-        if (spec.uri.scheme != "bitchord") return
+        if (spec.uri.scheme != "Podium Air") return
         val mediaId = mediaIdIn(spec.uri) ?: return
         val key = spec.key ?: keyFactory.buildCacheKey(spec)
         val origin = originOf(spec.uri, mediaId, servedUrl)
@@ -1240,7 +1240,7 @@ object AudioCache {
      * way on a direct-mode miss.
      */
     private fun settleDirectEntry(uri: Uri) {
-        if (uri.scheme != "bitchord" || uri.authority != "watch") return
+        if (uri.scheme != "Podium Air" || uri.authority != "watch") return
         val videoId = uri.getQueryParameter("v") ?: return
         // A rendition of its own (an upgrade, a revert), the watch's capped
         // copy and Automix's Opus are none of this: each has its own entry.

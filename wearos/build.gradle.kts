@@ -54,11 +54,11 @@ android {
         create("dev") {
             dimension = "env"
             applicationId = "com.dev.bitchord"
-            resValue("string", "app_name", "BitChord Dev")
+            resValue("string", "app_name", "Podium Air Dev")
         }
         create("prod") {
             dimension = "env"
-            resValue("string", "app_name", "BitChord")
+            resValue("string", "app_name", "Podium Air")
         }
     }
 
@@ -137,7 +137,7 @@ kotlin {
 }
 
 // Named after the phone APKs (BitChord-v1.8.apk) but with their own prefix, so
-// the phone's updater — which only takes assets starting "BitChord-" — can never
+// the phone's updater — which only takes assets starting "Podium Air-" — can never
 // pick a watch APK by mistake.
 base.archivesName.set("BitChordWear")
 

@@ -101,7 +101,7 @@ object AppUpdateChecker {
      *     BitChordTV-v1.8.apk   BitChordTV-v1.8_arm64-v8a.apk   ...
      *
      * so this app's APKs are the ones named with its own
-     * [BuildConfig.UPDATE_APK_PREFIX] — "BitChord-" never matches a TV file,
+     * [BuildConfig.UPDATE_APK_PREFIX] — "Podium Air-" never matches a TV file,
      * since the prefix ends at the hyphen. The universal build (no `_ABI`
      * suffix) is taken first, as it installs anywhere; failing that, the split
      * for this device's ABI. A release with neither leaves

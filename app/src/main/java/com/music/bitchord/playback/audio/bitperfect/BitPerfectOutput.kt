@@ -172,7 +172,7 @@ internal object BitPerfectOutput {
     private val _hardwareVolume = MutableStateFlow<UsbVolume.Snapshot?>(null)
     val hardwareVolume: StateFlow<UsbVolume.Snapshot?> = _hardwareVolume.asStateFlow()
     private val pendingVolume = AtomicReference<Double?>(null)
-    private val volumeExecutor = Executors.newSingleThreadExecutor { Thread(it, "BitChord-USB-volume") }
+    private val volumeExecutor = Executors.newSingleThreadExecutor { Thread(it, "Podium Air-USB-volume") }
 
     init {
         // A detached DAC stops its stream at once rather than at the next write.

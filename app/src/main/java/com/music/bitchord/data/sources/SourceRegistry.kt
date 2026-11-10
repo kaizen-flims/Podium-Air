@@ -122,7 +122,7 @@ data class SourceConfig(
  */
 object SourceRegistry {
 
-    private const val TAG = "BitChord"
+    private const val TAG = "Podium Air"
 
     private lateinit var prefs: SharedPreferences
 
@@ -624,7 +624,7 @@ object SourceRegistry {
     /** The playback URI for a source-backed track; [PlaybackService] resolves it at open time. */
     fun trackUri(configId: String, trackId: String): String =
         Uri.Builder()
-            .scheme("bitchord")
+            .scheme("Podium Air")
             .authority("source")
             .appendQueryParameter("s", configId)
             .appendQueryParameter("t", trackId)
