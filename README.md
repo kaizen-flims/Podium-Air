@@ -160,7 +160,7 @@ This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. 
 
 ## Upstream project and licence
 
-Podium Air is a rebranded derivative of **Podium Air**, originally created by
+Podium Air is a rebranded derivative of **BitChord**, originally created by
 Kushagra Singh. The original source, copyright notices, and GPL-3.0 licence are
 retained. This project does not claim authorship of the upstream implementation.
 See [LICENSE](LICENSE) and [UPSTREAM-CREDITS.md](UPSTREAM-CREDITS.md).
