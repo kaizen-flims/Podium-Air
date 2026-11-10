@@ -85,6 +85,7 @@ jobs:
           git show origin/main:Logo.png > "$PRESERVE/Logo.png"
           git show origin/main:app/src/main/assets/Logo.svg > "$PRESERVE/Logo.svg"
           git show origin/main:app/src/main/assets/LogoTransparent.svg > "$PRESERVE/LogoTransparent.svg"
+          git show origin/main:sharedUi/src/commonMain/composeResources/drawable/ic_logo.png > "$PRESERVE/ic_logo.png"
 
           for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
             for icon in ic_launcher.webp ic_launcher_round.webp; do
@@ -114,6 +115,7 @@ jobs:
           cp "$PRESERVE/Logo.png" Logo.png
           cp "$PRESERVE/Logo.svg" app/src/main/assets/Logo.svg
           cp "$PRESERVE/LogoTransparent.svg" app/src/main/assets/LogoTransparent.svg
+          cp "$PRESERVE/ic_logo.png" sharedUi/src/commonMain/composeResources/drawable/ic_logo.png
           for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
             if [ -d "$PRESERVE/mipmap-$density" ]; then
               mkdir -p "app/src/main/res/mipmap-$density"
