@@ -2105,7 +2105,7 @@ fun NowPlayingScreen(
                 } else if (!simplePlayerTheme && !tabletArtworkBackdrop && !spotifyCanvasPresentation) {
                     ArtworkMeshBackdrop(
                         mesh = artMesh,
-                        seam = if (canvasFirstPortrait) renderedCanvasBottom else if (heroMode) heroHeight else 0.dp,
+                        seam = { if (canvasFirstPortrait) renderedCanvasBottom else if (heroMode) heroHeight else 0.dp },
                         modifier = Modifier.graphicsLayer { alpha = 1f - fullArtworkBackdropAlpha },
                     )
                 }
