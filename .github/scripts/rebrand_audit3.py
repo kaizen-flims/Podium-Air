@@ -112,6 +112,22 @@ launcher_bg.write_text('''<?xml version="1.0" encoding="utf-8"?>
 </vector>
 ''', encoding="utf-8")
 
+# The upstream vector mark is also used in replay cards and notification
+# surfaces. Point those resource names at the Podium Air mark as well.
+podium_mark = '''<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/podium_air_icon"
+    android:gravity="center" />
+'''
+for rel in (
+    "app/src/main/res/drawable/ic_logo.xml",
+    "app/src/main/res/drawable/ic_notification_logo.xml",
+    "tv/src/main/res/drawable/ic_logo.xml",
+    "tv/src/main/res/drawable/ic_notification_logo.xml",
+):
+    target = ROOT / rel
+    if target.exists():
+        target.write_text(podium_mark, encoding="utf-8")
+
 # README branding is updated without rewriting upstream links or attribution.
 readme = ROOT / "README.md"
 if readme.exists():
