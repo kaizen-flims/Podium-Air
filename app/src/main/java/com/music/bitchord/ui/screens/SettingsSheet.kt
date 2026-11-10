@@ -388,7 +388,7 @@ fun SettingsScreen(
     // that answered to the query, and that tally has to start from zero each
     // time the query changes.
     val search = SettingsSearch(searchQuery)
-    val searching = searchQuery.isNotBlank()
+    val searching = section == null && searchQuery.isNotBlank()
     fun shows(category: SettingsCategory) = section == category || (section == null && searching)
 
     // What is left after a keystroke is a different list, and the offset the
@@ -419,13 +419,16 @@ fun SettingsScreen(
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 14.dp),
         )
-        SearchField(
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
-            onSubmit = {},
-            placeholder = stringResource(R.string.settings_search_hint),
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 4.dp),
-        )
+        if (section == null) {
+            SearchField(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                onSubmit = {},
+                placeholder = stringResource(R.string.settings_search_hint),
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 4.dp),
+            )
+
+        }
 
         if (section == null) SearchableSettingsGroup(search) {
             val accountTitle = stringResource(R.string.account_integrations)
