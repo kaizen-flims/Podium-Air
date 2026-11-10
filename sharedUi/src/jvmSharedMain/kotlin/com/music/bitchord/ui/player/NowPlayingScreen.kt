@@ -840,7 +840,6 @@ fun NowPlayingScreen(
     val legacyMesh by PlayerSettings.legacyMeshGradient.collectAsStateWithLifecycle()
     val playerTheme by PlayerSettings.playerTheme.collectAsStateWithLifecycle()
     val simplePlayerTheme = playerTheme == PlayerTheme.SIMPLE
-    val disableBlendEffects by PlayerSettings.disableBlendEffects.collectAsStateWithLifecycle()
     // The backdrop's colours, taken off the artwork's own arrangement rather
     // than quantised out of it — see [ArtworkMesh].
     //
