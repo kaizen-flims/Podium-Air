@@ -28,6 +28,13 @@ enum class AudioQuality(
 }
 
 /** The surface that was last open inside the expanded player. */
+/** Visual treatment of the expanded player backdrop and chrome. */
+enum class PlayerTheme {
+    DEFAULT,
+    SIMPLE,
+    LEGACY,
+}
+
 enum class LastPlayerScreen {
     MAIN,
     LYRICS,
