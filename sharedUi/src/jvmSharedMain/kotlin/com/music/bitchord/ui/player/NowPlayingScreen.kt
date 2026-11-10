@@ -838,6 +838,7 @@ fun NowPlayingScreen(
     // v1.5's backdrop, kept behind a switch — see [PlayerSettings.legacyMeshGradient].
     val legacyMesh by PlayerSettings.legacyMeshGradient.collectAsStateWithLifecycle()
     val playerTheme by PlayerSettings.playerTheme.collectAsStateWithLifecycle()
+    val simplePlayerTheme = playerTheme == PlayerTheme.SIMPLE
     val disableBlendEffects by PlayerSettings.disableBlendEffects.collectAsStateWithLifecycle()
     // The backdrop's colours, taken off the artwork's own arrangement rather
     // than quantised out of it — see [ArtworkMesh].
@@ -1603,7 +1604,7 @@ fun NowPlayingScreen(
     val fullArtworkBlurImage = rememberFullArtworkBlurImage(
         imageUrl = remoteArt,
         artPx = ART_PX,
-        prepare = landscape || tabletArtworkBackdrop || lyricsOpen || queueOpen ||
+        prepare = simplePlayerTheme || landscape || tabletArtworkBackdrop || lyricsOpen || queueOpen ||
             playerPrewarmStage >= 1,
     )
     // One movable Image node, not two backdrop call sites. Compose carries it
@@ -2074,7 +2075,6 @@ fun NowPlayingScreen(
                 // The tablet has no mirrored main-player treatment to crossfade from.
                 // Legacy mesh is the whole backdrop on every page, so the lyrics and
                 // queue panels must not crossfade the blurred artwork over it.
-                val simplePlayerTheme = playerTheme == PlayerTheme.SIMPLE
                 val legacyMeshBackdrop = !tabletArtworkBackdrop && !spotifyCanvasPresentation &&
                     (legacyMesh || playerTheme == PlayerTheme.LEGACY) && !canvasFirstPortrait
                 val fullArtworkBackdropAlpha by animateFloatAsState(
