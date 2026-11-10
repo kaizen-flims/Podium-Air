@@ -195,6 +195,8 @@ fun SettingsScreen(
     onSpotifyCanvasAuth: () -> Unit,
     onAppLanguage: () -> Unit,
     onEditSignatureApi: () -> Unit,
+    section: SettingsCategory? = null,
+    onOpenSection: (SettingsCategory) -> Unit = {},
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -377,6 +379,8 @@ fun SettingsScreen(
     // that answered to the query, and that tally has to start from zero each
     // time the query changes.
     val search = SettingsSearch(searchQuery)
+    val searching = searchQuery.isNotBlank()
+    fun shows(category: SettingsCategory) = section == category || (section == null && searching)
 
     // What is left after a keystroke is a different list, and the offset the
     // last one was scrolled to means nothing in it.
@@ -401,7 +405,7 @@ fun SettingsScreen(
             .padding(contentPadding),
     ) {
         Text(
-            text = stringResource(R.string.settings),
+            text = stringResource(section?.title ?: R.string.settings),
             style = MaterialTheme.typography.displayLarge,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 14.dp),
@@ -414,7 +418,7 @@ fun SettingsScreen(
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 4.dp),
         )
 
-        SearchableSettingsGroup(search) {
+        if (section == null) SearchableSettingsGroup(search) {
             val accountTitle = stringResource(R.string.account_integrations)
             // What the row opens is the scrobbling screen, so the services it
             // signs into are worth typing at this field even though none of
@@ -451,7 +455,7 @@ fun SettingsScreen(
         // above lists that as the module's own row now. Lossless itself is no
         // longer a setting at all — see
         // [SourceResolver.requestForNow][com.music.bitchord.data.sources.SourceResolver.requestForNow].
-        SearchableSettingsGroup(search, header = stringResource(R.string.audio_quality)) {
+        if (section == null) SearchableSettingsGroup(search, header = stringResource(R.string.audio_quality)) {
             val sourceTitle = stringResource(R.string.source)
             val sourceSubtitle = stringResource(R.string.sources_subtitle)
             row(sourceTitle, sourceSubtitle, "addon", "lossless") {
@@ -521,12 +525,14 @@ fun SettingsScreen(
             }
         }
 
+        if (section == null && !searching) SettingsCategoryList(onOpenSection)
+
         // Its own group rather than rows bolted onto the two above, because a
         // download is not a third kind of connection. The ceilings answer "what
         // does this minute cost"; these answer "what am I keeping, and when may
         // it be fetched" — and those two questions only make sense read
         // together, which is what puts them side by side here.
-        SearchableSettingsGroup(search, header = stringResource(R.string.downloads)) {
+        if (shows(SettingsCategory.DOWNLOADS)) SearchableSettingsGroup(search, header = stringResource(R.string.downloads)) {
             val downloadQualityTitle = stringResource(R.string.download_quality)
             row(downloadQualityTitle, "offline", "lossless") {
                 SettingsRow(
@@ -560,7 +566,7 @@ fun SettingsScreen(
             }
         }
 
-        SearchableSettingsGroup(search, header = stringResource(R.string.playback)) {
+        if (shows(SettingsCategory.PLAYBACK)) SearchableSettingsGroup(search, header = stringResource(R.string.playback)) {
             val preferMusicOnlyTitle = stringResource(R.string.prefer_music_only)
             row(preferMusicOnlyTitle, "video", "audio", "music video") {
                 SettingsRow(
@@ -765,7 +771,7 @@ fun SettingsScreen(
             }
         }
 
-        SearchableSettingsGroup(search, header = stringResource(R.string.appearance)) {
+        if (shows(SettingsCategory.APPEARANCE)) SearchableSettingsGroup(search, header = stringResource(R.string.appearance)) {
             val themeTitle = stringResource(R.string.theme)
             row(themeTitle, "dark mode", "light mode") {
                 SettingsRow(icon = Icons.Rounded.Brightness4, title = themeTitle)
@@ -1102,7 +1108,7 @@ fun SettingsScreen(
             }
         }
 
-        SearchableSettingsGroup(search, header = stringResource(R.string.performance)) {
+        if (shows(SettingsCategory.PERFORMANCE)) SearchableSettingsGroup(search, header = stringResource(R.string.performance)) {
             val highPerformanceModeTitle = stringResource(R.string.high_performance_mode)
             row(highPerformanceModeTitle, "frame rate", "refresh rate", "hz", "battery", "smooth") {
                 SettingsRow(
@@ -1161,7 +1167,7 @@ fun SettingsScreen(
             }
         }
 
-        SearchableSettingsGroup(search, header = stringResource(R.string.local_music)) {
+        if (shows(SettingsCategory.LOCAL_MUSIC)) SearchableSettingsGroup(search, header = stringResource(R.string.local_music)) {
             val localMusicFolderTitle = stringResource(R.string.local_music_folder)
             row(localMusicFolderTitle, "folder", "offline", "files") {
                 SettingsRow(
@@ -1210,7 +1216,7 @@ fun SettingsScreen(
         val cacheLimitMb = if (cacheUnlimited) CACHE_UNLIMITED_STOP_MB else (cacheLimitBytes / (1024 * 1024)).toInt()
         val unlimitedLabel = stringResource(R.string.song_cache_unlimited)
         val cacheLimitLabel = if (cacheUnlimited) unlimitedLabel else formatCacheSize(cacheLimitMb)
-        SearchableSettingsGroup(search, header = stringResource(R.string.storage)) {
+        if (shows(SettingsCategory.STORAGE)) SearchableSettingsGroup(search, header = stringResource(R.string.storage)) {
             val showCacheFolderTitle = stringResource(R.string.show_cache_folder)
             row(showCacheFolderTitle, "cache", "cached songs", "library", "folder") {
                 SettingsRow(
@@ -1285,7 +1291,7 @@ fun SettingsScreen(
             }
         }
 
-        SearchableSettingsGroup(search, header = stringResource(R.string.your_data)) {
+        if (shows(SettingsCategory.YOUR_DATA)) SearchableSettingsGroup(search, header = stringResource(R.string.your_data)) {
             val replayTitle = stringResource(R.string.replay)
             row(replayTitle, "stats", "history", "wrapped") {
                 SettingsRow(
@@ -1340,7 +1346,7 @@ fun SettingsScreen(
 
         // No footer: it only restated the stop-on-close row's own subtitle,
         // which sits four rows above it and says the same thing in fewer words.
-        SearchableSettingsGroup(search, header = stringResource(R.string.miscellaneous)) {
+        if (shows(SettingsCategory.MISCELLANEOUS)) SearchableSettingsGroup(search, header = stringResource(R.string.miscellaneous)) {
             val playNextOnSwipeTitle = stringResource(R.string.play_next_on_swipe)
             row(playNextOnSwipeTitle, "swipe", "queue") {
                 SettingsRow(
@@ -1480,7 +1486,7 @@ fun SettingsScreen(
             }
         }
 
-        SearchableSettingsGroup(search, header = stringResource(R.string.language)) {
+        if (shows(SettingsCategory.LANGUAGE)) SearchableSettingsGroup(search, header = stringResource(R.string.language)) {
             val appLanguageTitle = stringResource(R.string.app_language)
             row(appLanguageTitle, "locale", "translate") {
                 val selectedLanguage = AppCompatDelegate.getApplicationLocales().get(0)?.toLanguageTag()
@@ -1494,7 +1500,7 @@ fun SettingsScreen(
             }
         }
 
-        SearchableSettingsGroup(search, header = stringResource(R.string.advanced_options)) {
+        if (shows(SettingsCategory.ADVANCED_OPTIONS)) SearchableSettingsGroup(search, header = stringResource(R.string.advanced_options)) {
             val smartAlignmentTitle = stringResource(R.string.smart_version_alignment)
             row(smartAlignmentTitle, "alignment", "sync", "waveform", "video", "audio", "skit", "intro") {
                 SettingsRow(
@@ -2781,6 +2787,36 @@ internal fun SegmentedControl(
                     maxLines = 1,
                 )
             }
+        }
+    }
+}
+
+
+/** Categories on the Settings landing page. Each opens its own focused page. */
+enum class SettingsCategory(@param:StringRes val title: Int, val icon: ImageVector) {
+    DOWNLOADS(R.string.downloads, Icons.Rounded.Download),
+    PLAYBACK(R.string.playback, Icons.Rounded.GraphicEq),
+    CONTENT_PREFERENCES(R.string.content_preferences, Icons.Rounded.VisibilityOff),
+    APPEARANCE(R.string.appearance, Icons.Rounded.Brightness4),
+    PERFORMANCE(R.string.performance, Icons.Rounded.Tune),
+    LOCAL_MUSIC(R.string.local_music, Icons.Rounded.Folder),
+    STORAGE(R.string.storage, Icons.Rounded.Storage),
+    YOUR_DATA(R.string.your_data, Icons.Rounded.BarChart),
+    MISCELLANEOUS(R.string.miscellaneous, Icons.Rounded.Apps),
+    LANGUAGE(R.string.language, Icons.Rounded.Language),
+    ADVANCED_OPTIONS(R.string.advanced_options, Icons.Rounded.Extension),
+}
+
+@Composable
+private fun SettingsCategoryList(onOpen: (SettingsCategory) -> Unit) {
+    SettingsGroup {
+        SettingsCategory.entries.forEachIndexed { index, category ->
+            if (index > 0) RowDivider()
+            SettingsRow(
+                icon = category.icon,
+                title = stringResource(category.title),
+                onClick = { onOpen(category) },
+            )
         }
     }
 }
