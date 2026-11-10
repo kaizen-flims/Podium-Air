@@ -25,10 +25,11 @@ for path in ROOT.rglob("*"):
     except (UnicodeDecodeError, OSError):
         continue
 
+    brand_token = re.compile(r'(?<![/A-Za-z0-9_%])BitChord(?![/A-Za-z0-9_%])')
     if path.suffix.lower() == ".xml" or path.suffix.lower() in {".md", ".txt", ".html", ".svg", ".yaml", ".yml", ".toml", ".properties"}:
-        updated = source.replace("BitChord", "Podium Air")
+        updated = brand_token.sub("Podium Air", source)
     else:
-        updated = string_literal.sub(lambda m: m.group(0).replace("BitChord", "Podium Air"), source)
+        updated = string_literal.sub(lambda m: brand_token.sub("Podium Air", m.group(0)), source)
 
     if updated != source:
         path.write_text(updated, encoding="utf-8")
