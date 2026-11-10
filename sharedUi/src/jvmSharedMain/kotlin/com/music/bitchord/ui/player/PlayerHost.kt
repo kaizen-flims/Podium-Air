@@ -11,6 +11,7 @@ import com.music.bitchord.data.lyrics.LyricsSource
 import com.music.bitchord.data.model.Song
 import com.music.bitchord.data.settings.AudioQuality
 import com.music.bitchord.data.settings.LastPlayerScreen
+import com.music.bitchord.data.settings.PlayerTheme
 import com.music.bitchord.data.settings.SmartAnalysis
 import com.music.bitchord.data.settings.MixBlend
 import com.music.bitchord.data.settings.TransitionWindow
@@ -161,6 +162,7 @@ object PlayerPlatform {
 /** The settings the player reads, named and typed as the phone's AppSettings has them. */
 // Existing desktop hosts have no Android status bar or queue-history preference.
 private val DisabledOptionalPlayerSetting = MutableStateFlow(false)
+private val DefaultPlayerTheme = MutableStateFlow(PlayerTheme.DEFAULT)
 
 interface PlayerSettingsSource {
     val animatedCanvas: StateFlow<Boolean>
@@ -174,6 +176,8 @@ interface PlayerSettingsSource {
     /** Hide the device status bar while the player is up. Always false where there is none. */
     val hideStatusBar: StateFlow<Boolean> get() = DisabledOptionalPlayerSetting
     val lastPlayerScreen: StateFlow<LastPlayerScreen>
+    val playerTheme: StateFlow<PlayerTheme> get() = DefaultPlayerTheme
+    val disableBlendEffects: StateFlow<Boolean> get() = DisabledOptionalPlayerSetting
     val legacyMeshGradient: StateFlow<Boolean>
     val lyricsBlur: StateFlow<Boolean>
     val lyricsOffsetMs: StateFlow<Int>
