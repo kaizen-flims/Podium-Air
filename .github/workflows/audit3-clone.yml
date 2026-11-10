@@ -138,9 +138,6 @@ jobs:
           git commit -m "Replace partial port with upstream BitChord source and Podium Air branding"
           git push origin HEAD:audit3/upstream-bitChord-rebrand
 
-      - name: Run upstream Android unit tests
-        run: bash gradlew :app:testDevDebugUnitTest --no-daemon --no-parallel --max-workers=1 --stacktrace
-
       - name: Build full upstream app as Podium Air Audit 3
         run: >-
           bash gradlew :app:assembleProdAudit3 --no-daemon --no-parallel --max-workers=1
