@@ -18,12 +18,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.music.bitchord.R
 
-// Apple Music's signature red. No longer the primary accent, but kept for the
-// spots (Replay's rank badge) that want that specific red regardless of theme.
+// Apple Music's signature red. Kept only for the spots (Replay's rank badge)
+// that intentionally retain that identity regardless of the app accent.
 val AccentRed = Color(0xFFFA2D48)
 
+// Podium Air's green accent for primary actions, settings controls and toggles.
+val AccentGreen = Color(0xFF1DB954)
+
 private val DarkColors = darkColorScheme(
-    primary = Color.White,
+    primary = AccentGreen,
     onPrimary = Color.Black,
     background = Color.Black,
     onBackground = Color.White,
@@ -35,8 +38,8 @@ private val DarkColors = darkColorScheme(
 )
 
 private val LightColors = lightColorScheme(
-    primary = Color.Black,
-    onPrimary = Color.White,
+    primary = AccentGreen,
+    onPrimary = Color.Black,
     background = Color.White,
     onBackground = Color.Black,
     surface = Color(0xFFF7F7F9),
