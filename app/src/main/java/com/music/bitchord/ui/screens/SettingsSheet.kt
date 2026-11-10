@@ -845,7 +845,7 @@ fun SettingsScreen(
                 val glassPerformanceTitle = stringResource(R.string.glass_performance)
                 row(glassPerformanceTitle, "glass", "performance", "frosted", "refraction", "lag") {
                     SettingsRow(
-                        icon = Icons.Rounded.Speed,
+                        icon = Icons.Rounded.Tune,
                         title = glassPerformanceTitle,
                         subtitle = stringResource(R.string.glass_performance_subtitle),
                         trailing = {
