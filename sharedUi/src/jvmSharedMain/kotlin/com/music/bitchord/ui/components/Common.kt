@@ -157,6 +157,11 @@ val FLOATING_BAR_MAX_WIDTH = 440.dp
  */
 val SHELF_CARD_WIDTH = 150.dp
 
+/** Shared Compose state for music-video thumbnail shape across player and shelf surfaces. */
+object VideoThumbnails {
+    var square by mutableStateOf(false)
+}
+
 /** Share of the row a lead-shelf card takes, so the next one peeks in past it. */
 private const val HERO_CARD_FRACTION = 0.70f
 
