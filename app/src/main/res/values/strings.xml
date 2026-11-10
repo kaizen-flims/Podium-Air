@@ -322,6 +322,8 @@
     <string name="liquid_glass_subtitle">Real refracting glass on the floating nav bar. Android 12+ only; uses more GPU.</string>
     <string name="liquid_glass_unavailable">Requires Android 12 or newer</string>
     <string name="full_screen_cover_art">Full-screen cover art</string>
+    <string name="full_bleed_detail_artwork">Full-bleed album and playlist artwork</string>
+    <string name="full_bleed_detail_artwork_subtitle">Let album and playlist covers extend to the edges of the page</string>
     <string name="legacy_mesh_gradient">Legacy mesh gradient</string>
     <string name="legacy_mesh_gradient_subtitle">Brings back the drifting colour blobs behind the player from v1.5</string>
     <string name="animated_cover_art">Animated cover art</string>
