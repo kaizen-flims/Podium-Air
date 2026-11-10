@@ -18,7 +18,7 @@ for path in ROOT.rglob("*"):
     if not path.is_file() or path.suffix.lower() not in TEXT_EXTS:
         continue
     rel = path.relative_to(ROOT).as_posix()
-    if rel.startswith(".git/") or rel in {"LICENSE", "COPYING", "NOTICE"}:
+    if rel.startswith(".git/") or rel.startswith(".github/workflows/") or rel in {"LICENSE", "COPYING", "NOTICE"}:
         continue
     try:
         source = path.read_text(encoding="utf-8")
