@@ -726,6 +726,7 @@ private fun BitChordApp(
     val hideHomeVideos by AppSettings.hideHomeVideos.collectAsStateWithLifecycle()
     val hideHomeTopPicks by AppSettings.hideTopPicks.collectAsStateWithLifecycle()
     val hideHomeMoods by AppSettings.hideHomeMoods.collectAsStateWithLifecycle()
+    val squareVideoThumbnails by AppSettings.squareVideoThumbnails.collectAsStateWithLifecycle()
     val homeLoadingMore by viewModel.homeLoadingMore.collectAsStateWithLifecycle()
     val homeRecentlyPlayedLoading by viewModel.homeRecentlyPlayedLoading.collectAsStateWithLifecycle()
 
@@ -3098,6 +3099,7 @@ private fun BitChordApp(
                                 hideHomeVideos = hideHomeVideos,
                                 hideTopPicks = hideHomeTopPicks,
                                 hideHomeMoods = hideHomeMoods,
+                                squareVideoThumbnails = squareVideoThumbnails,
                             )
                             TAB_EXPLORE -> selectedMoodGenre?.let { category ->
                                 MoodGenrePlaylistsScreen(
