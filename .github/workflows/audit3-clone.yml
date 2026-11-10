@@ -1,0 +1,177 @@
+name: Podium Air Audit 3 (upstream clone)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "audit3/upstream-bitChord-rebrand"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: podium-air-audit3-upstream
+  cancel-in-progress: true
+
+jobs:
+  clone-brand-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out isolated Audit 3 branch
+        uses: actions/checkout@v4
+        with:
+          ref: audit3/upstream-bitChord-rebrand
+          fetch-depth: 0
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+
+      - name: Restore dedicated Audit 3 signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/podium-air-audit3.keystore
+          key: podium-air-android-audit3-upstream-signing-v1
+
+      - name: Create dedicated Audit 3 signing key when needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.android"
+          if [ ! -s "$HOME/.android/podium-air-audit3.keystore" ]; then
+            keytool -genkeypair -v \
+              -keystore "$HOME/.android/podium-air-audit3.keystore" \
+              -storepass android -keypass android -alias podiumaudit3 \
+              -dname "CN=Podium Air Audit 3, O=Podium, C=IN" \
+              -keyalg RSA -keysize 2048 -validity 10000
+          fi
+          keytool -exportcert -keystore "$HOME/.android/podium-air-audit3.keystore" \
+            -storepass android -alias podiumaudit3 > "$RUNNER_TEMP/audit3-certificate.der"
+          sha256sum "$RUNNER_TEMP/audit3-certificate.der" | cut -d ' ' -f 1 > "$RUNNER_TEMP/audit3-certificate.sha256"
+          if grep -Fxq "$(cat "$RUNNER_TEMP/audit3-certificate.sha256")" <(printf '%s\n' \
+            f54546718dc928e7d68d745cff4741c8a64f088564cd35c515a81d870c94a9ac \
+            fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2); then
+            echo "Audit 3 signing key must differ from Audit 2 and production."
+            exit 1
+          fi
+
+      - name: Clone the exact upstream source and apply Podium-only branding
+        shell: bash
+        run: |
+          set -euo pipefail
+          UPSTREAM_SHA="acf219a7e4a7f52f026d4336d5c7ac5cf7bfafcc"
+          PRESERVE="$RUNNER_TEMP/podium-audit3-preserve"
+          mkdir -p "$PRESERVE"
+
+          # Keep this workflow and the branding-only script while replacing the
+          # incomplete prior port with the complete upstream repository tree.
+          cp .github/workflows/audit3-clone.yml "$PRESERVE/audit3-clone.yml"
+          cp .github/scripts/rebrand_audit3.py "$PRESERVE/rebrand_audit3.py"
+
+          # Preserve the approved Podium Air logo assets from the existing repo.
+          git fetch origin main
+          git show origin/main:app/src/main/res/drawable-nodpi/podium_air_icon.png > "$PRESERVE/podium_air_icon.png"
+          git show origin/main:app/src/main/res/drawable/podium_air_launcher_foreground.xml > "$PRESERVE/podium_air_launcher_foreground.xml"
+          git show origin/main:app/src/main/ic_launcher-playstore.png > "$PRESERVE/ic_launcher-playstore.png"
+          git show origin/main:Logo.png > "$PRESERVE/Logo.png"
+          git show origin/main:app/src/main/assets/Logo.svg > "$PRESERVE/Logo.svg"
+          git show origin/main:app/src/main/assets/LogoTransparent.svg > "$PRESERVE/LogoTransparent.svg"
+
+          for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            for icon in ic_launcher.webp ic_launcher_round.webp; do
+              if git cat-file -e "origin/main:app/src/main/res/mipmap-$density/$icon" 2>/dev/null; then
+                mkdir -p "$PRESERVE/mipmap-$density"
+                git show "origin/main:app/src/main/res/mipmap-$density/$icon" > "$PRESERVE/mipmap-$density/$icon"
+              fi
+            done
+          done
+
+          git clone https://github.com/kushagrasinghx/BitChord.git "$RUNNER_TEMP/BitChord"
+          git -C "$RUNNER_TEMP/BitChord" checkout "$UPSTREAM_SHA"
+          test "$(git -C "$RUNNER_TEMP/BitChord" rev-parse HEAD)" = "$UPSTREAM_SHA"
+
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.github/workflows/***' \
+            --exclude='.github/scripts/rebrand_audit3.py' \
+            "$RUNNER_TEMP/BitChord/" ./
+
+          mkdir -p app/src/main/res/drawable-nodpi app/src/main/res/drawable .github/workflows .github/scripts
+          cp "$PRESERVE/audit3-clone.yml" .github/workflows/audit3-clone.yml
+          cp "$PRESERVE/rebrand_audit3.py" .github/scripts/rebrand_audit3.py
+          cp "$PRESERVE/podium_air_icon.png" app/src/main/res/drawable-nodpi/podium_air_icon.png
+          cp "$PRESERVE/podium_air_launcher_foreground.xml" app/src/main/res/drawable/podium_air_launcher_foreground.xml
+          cp "$PRESERVE/ic_launcher-playstore.png" app/src/main/ic_launcher-playstore.png
+          cp "$PRESERVE/Logo.png" Logo.png
+          cp "$PRESERVE/Logo.svg" app/src/main/assets/Logo.svg
+          cp "$PRESERVE/LogoTransparent.svg" app/src/main/assets/LogoTransparent.svg
+          for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            if [ -d "$PRESERVE/mipmap-$density" ]; then
+              mkdir -p "app/src/main/res/mipmap-$density"
+              cp "$PRESERVE/mipmap-$density/"* "app/src/main/res/mipmap-$density/"
+            fi
+          done
+
+          python3 .github/scripts/rebrand_audit3.py
+
+          # Preserve upstream licence files and add an explicit derivative notice.
+          test -f LICENSE
+          test -f UPSTREAM-CREDITS.md
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Replace partial port with upstream BitChord source and Podium Air branding"
+          git push origin HEAD:audit3/upstream-bitChord-rebrand
+
+      - name: Run upstream Android unit tests
+        run: bash gradlew :app:testDevDebugUnitTest --no-daemon --no-parallel --max-workers=1 --stacktrace
+
+      - name: Build full upstream app as Podium Air Audit 3
+        run: >-
+          bash gradlew :app:assembleProdAudit3 --no-daemon --no-parallel --max-workers=1
+          -Pkotlin.compiler.execution.strategy=in-process
+          '-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true'
+          --stacktrace
+
+      - name: Verify package, app label, and signing identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          AAPT="$(dirname "$APKSIGNER")/aapt"
+          APK="$(find app/build/outputs/apk/prod/audit3 -name '*.apk' ! -name '*-androidTest*.apk' | head -n 1)"
+          test -n "$APK"
+          mkdir -p dist/android-audit3
+          cp "$APK" dist/android-audit3/Podium-Air-Audit-3.apk
+          "$AAPT" dump badging "$APK" | tee dist/android-audit3/apk-badging.txt
+          "$APKSIGNER" verify --print-certs "$APK" | tee dist/android-audit3/signing-verification.txt
+          grep -Fq "package: name='com.podium.air.audit3'" dist/android-audit3/apk-badging.txt
+          grep -Fq "application-label:'Podium Air Audit 3'" dist/android-audit3/apk-badging.txt
+          EXPECTED="$(cat "$RUNNER_TEMP/audit3-certificate.sha256")"
+          grep -Fqi "$EXPECTED" dist/android-audit3/signing-verification.txt
+          if grep -Fqi 'f54546718dc928e7d68d745cff4741c8a64f088564cd35c515a81d870c94a9ac' dist/android-audit3/signing-verification.txt; then
+            echo 'Audit 3 certificate matches Audit 2; refusing artifact.'
+            exit 1
+          fi
+          if grep -Fqi 'fecd7966b7cff88be9aeb7be70bfc10b588d43569c8bf25c447dd4ae4d1d95a2' dist/android-audit3/signing-verification.txt; then
+            echo 'Audit 3 certificate matches production; refusing artifact.'
+            exit 1
+          fi
+          sha256sum dist/android-audit3/Podium-Air-Audit-3.apk > dist/android-audit3/SHA256SUMS.txt
+
+      - name: Upload isolated Audit 3 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: podium-air-audit3-upstream-clone
+          path: dist/android-audit3/
+          if-no-files-found: error
