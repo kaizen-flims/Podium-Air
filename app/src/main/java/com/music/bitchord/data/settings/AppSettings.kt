@@ -395,6 +395,11 @@ object AppSettings {
      * metadata appears immediately while the catalogue match is resolved.
      */
     val preferMusicOnly = MutableStateFlow(false)
+    val hideRecents = MutableStateFlow(false)
+    val hideHomeVideos = MutableStateFlow(false)
+    val hideTopPicks = MutableStateFlow(false)
+    val hideHomeMoods = MutableStateFlow(false)
+    val squareVideoThumbnails = MutableStateFlow(false)
 
     /** Analyzes audio waveform/envelope to align matching playback moment between versions. */
     val smartVersionAlignment = MutableStateFlow(true)
@@ -873,6 +878,11 @@ object AppSettings {
         swipeToPlayNext.value = prefs.getBoolean(KEY_SWIPE_TO_PLAY_NEXT, false)
         dontRepeatSuggestions.value = prefs.getBoolean(KEY_DONT_REPEAT_SUGGESTIONS, false)
         preferMusicOnly.value = prefs.getBoolean(KEY_PREFER_MUSIC_ONLY, false)
+        hideRecents.value = prefs.getBoolean(KEY_HIDE_RECENTS, false)
+        hideHomeVideos.value = prefs.getBoolean(KEY_HIDE_HOME_VIDEOS, false)
+        hideTopPicks.value = prefs.getBoolean(KEY_HIDE_TOP_PICKS, false)
+        hideHomeMoods.value = prefs.getBoolean(KEY_HIDE_HOME_MOODS, false)
+        squareVideoThumbnails.value = prefs.getBoolean(KEY_SQUARE_VIDEO_THUMBNAILS, false)
         smartVersionAlignment.value = prefs.getBoolean(KEY_SMART_VERSION_ALIGNMENT, true)
         reduceDynamicBlur.value = prefs.getBoolean(KEY_REDUCE_BLUR, false)
         liquidGlass.value = prefs.getBoolean(KEY_LIQUID_GLASS, false)
@@ -1274,6 +1284,31 @@ object AppSettings {
     fun setPreferMusicOnly(value: Boolean) {
         preferMusicOnly.value = value
         prefs.edit().putBoolean(KEY_PREFER_MUSIC_ONLY, value).apply()
+    }
+
+    fun setHideRecents(value: Boolean) {
+        hideRecents.value = value
+        prefs.edit().putBoolean(KEY_HIDE_RECENTS, value).apply()
+    }
+
+    fun setHideHomeVideos(value: Boolean) {
+        hideHomeVideos.value = value
+        prefs.edit().putBoolean(KEY_HIDE_HOME_VIDEOS, value).apply()
+    }
+
+    fun setHideTopPicks(value: Boolean) {
+        hideTopPicks.value = value
+        prefs.edit().putBoolean(KEY_HIDE_TOP_PICKS, value).apply()
+    }
+
+    fun setHideHomeMoods(value: Boolean) {
+        hideHomeMoods.value = value
+        prefs.edit().putBoolean(KEY_HIDE_HOME_MOODS, value).apply()
+    }
+
+    fun setSquareVideoThumbnails(value: Boolean) {
+        squareVideoThumbnails.value = value
+        prefs.edit().putBoolean(KEY_SQUARE_VIDEO_THUMBNAILS, value).apply()
     }
 
     fun setSmartVersionAlignment(value: Boolean) {
@@ -2047,6 +2082,11 @@ object AppSettings {
     private const val KEY_SWIPE_TO_PLAY_NEXT = "swipe_to_play_next"
     private const val KEY_DONT_REPEAT_SUGGESTIONS = "dont_repeat_suggestions"
     private const val KEY_PREFER_MUSIC_ONLY = "prefer_music_only"
+    private const val KEY_HIDE_RECENTS = "hide_recents"
+    private const val KEY_HIDE_HOME_VIDEOS = "hide_home_videos"
+    private const val KEY_HIDE_TOP_PICKS = "hide_top_picks"
+    private const val KEY_HIDE_HOME_MOODS = "hide_home_moods"
+    private const val KEY_SQUARE_VIDEO_THUMBNAILS = "square_video_thumbnails"
     private const val KEY_SMART_VERSION_ALIGNMENT = "smart_version_alignment"
     private const val KEY_REDUCE_BLUR = "reduce_dynamic_blur"
     private const val KEY_LIQUID_GLASS = "liquid_glass"
