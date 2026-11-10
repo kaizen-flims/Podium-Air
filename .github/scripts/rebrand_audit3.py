@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 
 ROOT = Path.cwd()
-TEXT_EXTS = {".xml", ".kt", ".kts", ".java", ".md", ".txt", ".json", ".html", ".svg", ".yaml", ".yml", ".toml", ".properties", ".pro", ".sh", ".py"}
+TEXT_EXTS = {".xml", ".kt", ".kts", ".java", ".md", ".txt", ".json", ".html", ".svg", ".yaml", ".yml", ".toml", ".properties", ".pro", ".sh"}
 
 # Replace product names in Android resources and literal UI strings. Kotlin
 # identifiers, package names, URLs, and upstream attribution are left intact.
@@ -25,11 +25,17 @@ for path in ROOT.rglob("*"):
     except (UnicodeDecodeError, OSError):
         continue
 
-    brand_token = re.compile(r'(?<![/A-Za-z0-9_%])Podium Air(?![/A-Za-z0-9_%])')
-    if path.suffix.lower() == ".xml" or path.suffix.lower() in {".md", ".txt", ".html", ".svg", ".yaml", ".yml", ".toml", ".properties"}:
-        updated = brand_token.sub("Podium Air", source)
+    brand_token = re.compile(r'(?<![/A-Za-z0-9_%])BitChord(?![/A-Za-z0-9_%])')
+    lower_brand = re.compile(r'(?<![A-Za-z0-9_./:-])bitchord(?![A-Za-z0-9_./:-])')
+    if path.suffix.lower() == ".xml":
+        updated = lower_brand.sub("Podium Air", source.replace("BitChord", "Podium Air"))
+    elif path.suffix.lower() in {".md", ".txt", ".html", ".svg", ".yaml", ".yml", ".toml", ".properties"}:
+        updated = lower_brand.sub("Podium Air", brand_token.sub("Podium Air", source))
     else:
-        updated = string_literal.sub(lambda m: brand_token.sub("Podium Air", m.group(0)), source)
+        updated = string_literal.sub(
+            lambda m: lower_brand.sub("Podium Air", brand_token.sub("Podium Air", m.group(0))),
+            source,
+        )
 
     if updated != source:
         path.write_text(updated, encoding="utf-8")
@@ -127,10 +133,10 @@ See [LICENSE](LICENSE) and [UPSTREAM-CREDITS.md](UPSTREAM-CREDITS.md).
 
 (ROOT / "UPSTREAM-CREDITS.md").write_text('''# Upstream credits
 
-Podium Air Audit 3 is based on **Podium Air** by **Kushagra Singh**.
+Podium Air Audit 3 is based on **BitChord** by **Kushagra Singh**.
 
 - Upstream repository: https://github.com/kushagrasinghx/BitChord
-- Upstream release: Podium Air v1.9.1
+- Upstream release: BitChord v1.9.1
 - Upstream source commit: acf219a7e4a7f52f026d4336d5c7ac5cf7bfafcc
 - Licence: GNU General Public License v3.0 (GPL-3.0)
 
