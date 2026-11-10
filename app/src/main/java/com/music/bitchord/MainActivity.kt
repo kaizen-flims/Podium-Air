@@ -174,6 +174,7 @@ import com.music.bitchord.ui.screens.ListenTogetherScreen
 import com.music.bitchord.ui.screens.PartyServerEditor
 import com.music.bitchord.ui.screens.SignatureApiEditor
 import com.music.bitchord.ui.screens.SettingsScreen
+import com.music.bitchord.ui.screens.SettingsCategory
 import com.music.bitchord.ui.screens.SourceEditorAlert
 import com.music.bitchord.ui.screens.SourcesScreen
 import com.music.bitchord.data.sources.TrackMatcher
@@ -2806,8 +2807,10 @@ private fun BitChordApp(
                             )
                         } else if (pageRoute == AppRoute.Equalizer) {
                             EqualizerScreen(contentPadding = listPadding)
-                        } else if (pageRoute == AppRoute.Settings) {
+                        } else if (pageRoute == AppRoute.Settings || pageRoute is AppRoute.SettingsSection) {
                             SettingsScreen(
+                                section = (pageRoute as? AppRoute.SettingsSection)?.category,
+                                onOpenSection = { navigator.push(AppRoute.SettingsSection(it)) },
                                 windowWidth = windowWidth,
                                 signedIn = signedIn,
                                 account = account,
@@ -3418,6 +3421,7 @@ private fun BitChordApp(
                         AppRoute.WearOs -> stringResource(R.string.wear_os_page_title)
                         AppRoute.Equalizer -> stringResource(R.string.equalizer)
                         AppRoute.Settings -> stringResource(R.string.settings)
+                        is AppRoute.SettingsSection -> stringResource(route.category.title)
                         AppRoute.Replay -> stringResource(R.string.replay)
                         null -> when {
                             detail != null && detailActiveShelf != null -> detailActiveShelf?.title.orEmpty()
