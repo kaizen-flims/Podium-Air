@@ -254,6 +254,11 @@ fun SettingsScreen(
     val swipeToPlayNext by AppSettings.swipeToPlayNext.collectAsStateWithLifecycle()
     val dontRepeatSuggestions by AppSettings.dontRepeatSuggestions.collectAsStateWithLifecycle()
     val preferMusicOnly by AppSettings.preferMusicOnly.collectAsStateWithLifecycle()
+    val hideRecents by AppSettings.hideRecents.collectAsStateWithLifecycle()
+    val hideHomeVideos by AppSettings.hideHomeVideos.collectAsStateWithLifecycle()
+    val hideTopPicks by AppSettings.hideTopPicks.collectAsStateWithLifecycle()
+    val hideHomeMoods by AppSettings.hideHomeMoods.collectAsStateWithLifecycle()
+    val squareVideoThumbnails by AppSettings.squareVideoThumbnails.collectAsStateWithLifecycle()
     val smartVersionAlignment by AppSettings.smartVersionAlignment.collectAsStateWithLifecycle()
     val filterNonMusicAudio by AppSettings.filterNonMusicAudio.collectAsStateWithLifecycle()
     val localMusicFolderUri by AppSettings.localMusicFolderUri.collectAsStateWithLifecycle()
@@ -768,6 +773,32 @@ fun SettingsScreen(
                     subtitle = stringResource(R.string.equalizer_subtitle),
                     onClick = onEqualizer,
                 )
+            }
+        }
+
+        if (shows(SettingsCategory.CONTENT_PREFERENCES)) SearchableSettingsGroup(
+            search,
+            header = stringResource(R.string.content_preferences),
+        ) {
+            val hideRecentsTitle = stringResource(R.string.hide_recents)
+            row(hideRecentsTitle, "home", "recently played") {
+                SettingsSubRow(title = hideRecentsTitle, checked = hideRecents, onCheckedChange = AppSettings::setHideRecents)
+            }
+            val hideVideosTitle = stringResource(R.string.hide_home_videos)
+            row(hideVideosTitle, "videos", "music videos") {
+                SettingsSubRow(title = hideVideosTitle, checked = hideHomeVideos, onCheckedChange = AppSettings::setHideHomeVideos)
+            }
+            val hideTopPicksTitle = stringResource(R.string.hide_top_picks)
+            row(hideTopPicksTitle, "top picks", "recommendations") {
+                SettingsSubRow(title = hideTopPicksTitle, checked = hideTopPicks, onCheckedChange = AppSettings::setHideTopPicks)
+            }
+            val hideMoodsTitle = stringResource(R.string.hide_home_moods)
+            row(hideMoodsTitle, "moods", "find your mood") {
+                SettingsSubRow(title = hideMoodsTitle, checked = hideHomeMoods, onCheckedChange = AppSettings::setHideHomeMoods)
+            }
+            val squareVideosTitle = stringResource(R.string.square_video_thumbnails)
+            row(squareVideosTitle, "square", "video thumbnails", divided = false) {
+                SettingsSubRow(title = squareVideosTitle, checked = squareVideoThumbnails, onCheckedChange = AppSettings::setSquareVideoThumbnails)
             }
         }
 
