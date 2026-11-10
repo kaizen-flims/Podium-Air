@@ -28,7 +28,14 @@ for path in ROOT.rglob("*"):
     brand_token = re.compile(r'(?<![/A-Za-z0-9_%])BitChord(?![/A-Za-z0-9_%])')
     lower_brand = re.compile(r'(?<![A-Za-z0-9_./:-])bitchord(?![A-Za-z0-9_./:-])')
     if path.suffix.lower() == ".xml":
-        updated = lower_brand.sub("Podium Air", source.replace("BitChord", "Podium Air"))
+        def brand_xml_text(value):
+            return lower_brand.sub("Podium Air", brand_token.sub("Podium Air", value))
+        updated = re.sub(r'>([^<>]+)<', lambda m: ">" + brand_xml_text(m.group(1)) + "<", source)
+        updated = re.sub(
+            r'((?:android:)?(?:label|title|description|contentDescription|text|hint|summary)=")([^"]*)(")',
+            lambda m: m.group(1) + brand_xml_text(m.group(2)) + m.group(3),
+            updated,
+        )
     elif path.suffix.lower() in {".md", ".txt", ".html", ".svg", ".yaml", ".yml", ".toml", ".properties"}:
         updated = lower_brand.sub("Podium Air", brand_token.sub("Podium Air", source))
     else:
