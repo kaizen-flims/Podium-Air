@@ -523,7 +523,7 @@
     <string name="start_radio">라디오 시작</string>
     <string name="shared_link">공유 링크</string>
     <string name="radio_started">%1$s 라디오 시작함</string>
-    <string name="saved_to_bitchord_folder">Music/Podium Air에 저장 완료</string>
+    <string name="saved_to_bitchord_folder">Music/BitChord에 저장 완료</string>
     <string name="nothing_downloading">다운로드 중인 항목 없음</string>
     <string name="nothing_to_explore">지금은 탐색할 항목 없음</string>
     <string name="no_youtube_music_results">YouTube Music 내 결과 없음</string>
@@ -1195,7 +1195,7 @@
     <string name="onboarding_sign_in_google">Google로 로그인</string>
     <string name="onboarding_skip_sign_in">로그인 건너뛰기</string>
     <string name="onboarding_back">뒤로</string>
-    <!-- Settings: Podium Air for Wear OS -->
+    <!-- Settings: BitChord for Wear OS -->
     <string name="wear_os_section">Wear OS용 Podium Air</string>
     <string name="wear_os_page_title">Wear OS</string>
     <string name="wear_os_your_watches">내 워치</string>
