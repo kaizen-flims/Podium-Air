@@ -755,11 +755,12 @@ fun NowPlayingScreen(
     // samples the upper band rather than the whole sleeve because that is what
     // lies beneath the status bar when the player expands to full bleed.
     val artTopLuminance = rememberArtworkTopBandLuminance(remoteArt, ART_PX)
+    val disableBlendEffects by PlayerSettings.disableBlendEffects.collectAsStateWithLifecycle()
     val artworkStatusScrimAlpha = topBandScrimAlpha(artTopLuminance)
     // The sleeve's own colour, lifted pale, read off the decode the scrim above
     // already made. Plain white until it is known, and for a sleeve with no
     // colour to give.
-    val artworkTint = rememberPlayerTint(remoteArt, ART_PX) ?: Color.White
+    val artworkTint = if (disableBlendEffects) Color.White else rememberPlayerTint(remoteArt, ART_PX) ?: Color.White
 
     // Media-player convention: the player always owns light status icons. The
     // top treatment below, rather than a window-flag flip per cover, provides
