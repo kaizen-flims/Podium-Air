@@ -27,6 +27,12 @@
     <string name="explore">Explore</string>
     <string name="listen_now">Listen Now</string>
     <string name="content_preferences" translatable="false">Content preferences</string>
+    <string name="player_theme" translatable="false">Player theme</string>
+    <string name="player_theme_default" translatable="false">Default</string>
+    <string name="player_theme_simple" translatable="false">Simple</string>
+    <string name="player_theme_legacy" translatable="false">Legacy</string>
+    <string name="disable_blend_effects" translatable="false">Disable blend effects</string>
+    <string name="disable_blend_effects_subtitle" translatable="false">Use plain white player icons, text and menus</string>
     <string name="hide_recents" translatable="false">Hide Recents</string>
     <string name="hide_home_videos" translatable="false">Hide music videos</string>
     <string name="hide_top_picks" translatable="false">Hide Top Picks for You</string>
