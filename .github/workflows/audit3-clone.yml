@@ -132,7 +132,7 @@ jobs:
           git add -A
           # The bootstrap workflow already exists on this branch. Keep it out
           # of the source-sync commit so the runner token need not write workflows.
-          git reset HEAD -- .github/workflows/audit3-clone.yml
+          git reset HEAD -- .github/workflows/
           git commit -m "Replace partial port with upstream BitChord source and Podium Air branding"
           git push origin HEAD:audit3/upstream-bitChord-rebrand
 
