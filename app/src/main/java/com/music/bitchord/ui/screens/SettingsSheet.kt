@@ -224,6 +224,7 @@ fun SettingsScreen(
     val signatureApiEnabled by AppSettings.signatureApiEnabled.collectAsStateWithLifecycle()
     val signatureApiUrl by AppSettings.signatureApiUrl.collectAsStateWithLifecycle()
     val fullBleedArtwork by AppSettings.fullBleedArtwork.collectAsStateWithLifecycle()
+    val fullBleedDetailArtwork by AppSettings.fullBleedDetailArtwork.collectAsStateWithLifecycle()
     val legacyMeshGradient by AppSettings.legacyMeshGradient.collectAsStateWithLifecycle()
     val syncedLyrics by AppSettings.syncedLyrics.collectAsStateWithLifecycle()
     val lyricsSources by AppSettings.lyricsSources.collectAsStateWithLifecycle()
@@ -863,6 +864,25 @@ fun SettingsScreen(
                         onClick = { AppSettings.setFullBleedArtwork(!fullBleedArtwork) },
                     )
                 }
+            }
+            val fullBleedDetailTitle = stringResource(R.string.full_bleed_detail_artwork)
+            row(fullBleedDetailTitle, "album", "playlist", "artwork", "cover") {
+                SettingsRow(
+                    icon = Icons.Rounded.Fullscreen,
+                    title = fullBleedDetailTitle,
+                    subtitle = stringResource(R.string.full_bleed_detail_artwork_subtitle),
+                    trailing = {
+                        Switch(
+                            checked = fullBleedDetailArtwork,
+                            onCheckedChange = AppSettings::setFullBleedDetailArtwork,
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                checkedBorderColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        )
+                    },
+                    onClick = { AppSettings.setFullBleedDetailArtwork(!fullBleedDetailArtwork) },
+                )
             }
             val legacyMeshGradientTitle = stringResource(R.string.legacy_mesh_gradient)
             row(legacyMeshGradientTitle, "background", "player") {
