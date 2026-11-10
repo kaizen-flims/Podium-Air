@@ -727,6 +727,9 @@ private fun BitChordApp(
     val hideHomeTopPicks by AppSettings.hideTopPicks.collectAsStateWithLifecycle()
     val hideHomeMoods by AppSettings.hideHomeMoods.collectAsStateWithLifecycle()
     val squareVideoThumbnails by AppSettings.squareVideoThumbnails.collectAsStateWithLifecycle()
+    LaunchedEffect(squareVideoThumbnails) {
+        com.music.bitchord.ui.components.VideoThumbnails.square = squareVideoThumbnails
+    }
     val homeLoadingMore by viewModel.homeLoadingMore.collectAsStateWithLifecycle()
     val homeRecentlyPlayedLoading by viewModel.homeRecentlyPlayedLoading.collectAsStateWithLifecycle()
 
