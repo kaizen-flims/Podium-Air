@@ -3,6 +3,7 @@ package com.music.bitchord.ui.navigation
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateListOf
 import com.music.bitchord.data.model.HomeShelf
+import com.music.bitchord.ui.screens.SettingsCategory
 
 /**
  * A page pushed over the tabs: Settings and every page under it, and the
@@ -24,6 +25,7 @@ sealed interface AppRoute {
     data object History : AppRoute
     data object Discord : AppRoute
     data object Spotify : AppRoute
+    data class SettingsSection(val category: SettingsCategory) : AppRoute
 
     /** A Library shelf's "Show all" — its own cards laid out again as a grid. */
     data class LibraryShowAll(val shelf: HomeShelf) : AppRoute
