@@ -135,8 +135,12 @@ jobs:
           # The bootstrap workflow already exists on this branch. Keep it out
           # of the source-sync commit so the runner token need not write workflows.
           git reset HEAD -- .github/workflows/
-          git commit -m "Replace partial port with upstream BitChord source and Podium Air branding"
-          git push origin HEAD:audit3/upstream-bitChord-rebrand
+          if ! git diff --cached --quiet; then
+            git commit -m "Replace partial port with upstream BitChord source and Podium Air branding"
+            git push origin HEAD:audit3/upstream-bitChord-rebrand
+          else
+            echo "Audit 3 branch already matches the pinned upstream source and Podium branding."
+          fi
 
       - name: Build full upstream app as Podium Air Audit 3
         run: >-
