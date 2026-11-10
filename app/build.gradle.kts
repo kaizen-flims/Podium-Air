@@ -127,6 +127,12 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        create("audit3") {
+            storeFile = file("${System.getProperty("user.home")}/.android/podium-air-audit3.keystore")
+            storePassword = "android"
+            keyAlias = "podiumaudit3"
+            keyPassword = "android"
+        }
         // Both halves have to be there, not just the properties file: it *names*
         // the keystore rather than containing it, and both are gitignored
         // separately, so a checkout can easily end up with the one and not the
@@ -191,6 +197,16 @@ android {
             signingConfig = signingConfigs.getByName("audit")
             matchingFallbacks += listOf("release")
             resValue("string", "app_name", "Podium Air Audit 2")
+            buildConfigField("boolean", "IS_AUDIT", "true")
+        }
+        // Audit 3 is a separate install and uses its own persistent CI keystore.
+        create("audit3") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".audit3"
+            versionNameSuffix = "-audit3-v1.9.1-ui"
+            signingConfig = signingConfigs.getByName("audit3")
+            matchingFallbacks += listOf("release")
+            resValue("string", "app_name", "Podium Air Audit 3")
             buildConfigField("boolean", "IS_AUDIT", "true")
         }
         create("benchmark") {
