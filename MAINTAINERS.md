@@ -1,6 +1,6 @@
 # Maintainers
 
-This document lists the maintainers responsible for Podium Air.
+This document lists the maintainers responsible for BitChord.
 
 | Maintainer | GitHub | Responsibilities |
 |---|---|---|

@@ -1,7 +1,7 @@
 package com.music.bitchord.wear
 
 /**
- * What Settings → "Podium Air for Wear OS" draws, kept apart from
+ * What Settings → "BitChord for Wear OS" draws, kept apart from
  * [WatchInstaller] so the TV build — which replaces that file with a stub —
  * still has the types.
  */

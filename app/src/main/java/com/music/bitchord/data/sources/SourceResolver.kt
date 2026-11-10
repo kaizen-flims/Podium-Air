@@ -41,7 +41,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  */
 object SourceResolver {
 
-    private const val TAG = "Podium Air"
+    private const val TAG = "BitChord"
 
     /**
      * What to ask a source for, right now, from the connection's ceiling alone

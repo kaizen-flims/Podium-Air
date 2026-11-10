@@ -40,7 +40,7 @@ class AddonAuthTest {
     private fun ok() = MockResponse().setBody("""{"tracks":[{"id":"1","title":"Song","artist":"Artist"}]}""")
 
     private fun challenge(code: String) = MockResponse().setResponseCode(401)
-        .setHeader("WWW-Authenticate", """Podium Air realm="bitchord-addons", error="$code", error_description="x"""")
+        .setHeader("WWW-Authenticate", """BitChord realm="bitchord-addons", error="$code", error_description="x"""")
         .setBody("""{"error":"bitchord_auth","code":"$code"}""")
 
     @Before
@@ -117,7 +117,7 @@ class AddonAuthTest {
     fun `a final refusal says why instead of looping`() = runBlocking {
         search = { challenge("invalid_proof") }
         val failure = client().search("song", AddonClient.TIER_LOSSLESS).exceptionOrNull()
-        assertEquals("This addon didn't accept Podium Air's verification (invalid_proof)", failure?.message)
+        assertEquals("This addon didn't accept BitChord's verification (invalid_proof)", failure?.message)
         assertEquals(2, searches().size)
     }
 

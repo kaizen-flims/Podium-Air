@@ -197,7 +197,7 @@ class AddonSourceTest {
         route("/manifest.json", outdatedManifest())
         route("/search", json("""{"tracks":[{"id":"t1","title":"S","artist":"A"}]}"""))
         route("/stream/t1", json("""{"url":"https://cdn/a.flac"}"""))
-        AddonAuth.refuseForTest("Podium Air couldn't verify this device: The bootloader is unlocked")
+        AddonAuth.refuseForTest("BitChord couldn't verify this device: The bootloader is unlocked")
         val source = source()
 
         assertEquals(1, source.search("S", 10, false, null).size)
@@ -223,14 +223,14 @@ class AddonSourceTest {
     fun `a device the auth service refuses is reported in its words`() = runBlocking {
         route("/manifest.json", manifest())
         AddonAuth.testHeaders = { _, _ ->
-            throw AddonException("Podium Air couldn't verify this device: The bootloader is unlocked")
+            throw AddonException("BitChord couldn't verify this device: The bootloader is unlocked")
         }
 
         val health = source().health()
 
         assertTrue("expected Rejected, got $health", health is SourceHealth.Rejected)
         assertEquals(
-            "Podium Air couldn't verify this device: The bootloader is unlocked",
+            "BitChord couldn't verify this device: The bootloader is unlocked",
             (health as SourceHealth.Rejected).reason,
         )
     }
@@ -238,7 +238,7 @@ class AddonSourceTest {
     @Test
     fun `an auth service that can't be reached reads as unreachable`() = runBlocking {
         route("/manifest.json", manifest())
-        AddonAuth.testHeaders = { _, _ -> throw AddonUnavailable("Couldn't reach Podium Air's addon verification service") }
+        AddonAuth.testHeaders = { _, _ -> throw AddonUnavailable("Couldn't reach BitChord's addon verification service") }
 
         assertTrue(source().health() is SourceHealth.Unreachable)
     }
@@ -249,7 +249,7 @@ class AddonSourceTest {
         route("/manifest.json", manifest())
         route("/search", json("""{"tracks":[{"id":"t1","title":"S","artist":"A"}]}"""))
         route("/stream/t1", json("""{"url":"https://cdn/a.flac"}"""))
-        AddonAuth.refuseForTest("Podium Air couldn't verify this device: revoked")
+        AddonAuth.refuseForTest("BitChord couldn't verify this device: revoked")
         val source = source()
 
         assertTrue(source.search("S", 10, false, null).isEmpty())

@@ -24,7 +24,7 @@ import kotlin.coroutines.CoroutineContext
  *
  * The obvious implementation shells out to `logcat`, and it works. But from
  * Android 13 an app that does so trips a system consent dialog — *"Allow
- * Podium Air to access all device logs?"* — which appears whenever the process
+ * BitChord to access all device logs?"* — which appears whenever the process
  * happens to spawn, asks for far more than this needs, and puts every other
  * app's output within reach of a paste made from a music player. None of that
  * is a reasonable price for a debug button.
@@ -229,7 +229,7 @@ object TrackLog {
         count: Int,
         elsewhere: Int,
     ) = buildString {
-        appendLine("Podium Air log — ${song.title} — ${song.artist}")
+        appendLine("BitChord log — ${song.title} — ${song.artist}")
         appendLine("id=${song.videoId} duration=${song.durationText ?: "?"} album=${song.albumName ?: "?"}")
         appendLine("playing: ${stats.describe()}")
         sourcesLine()?.let(::appendLine)

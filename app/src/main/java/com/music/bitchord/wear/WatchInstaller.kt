@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit
 import com.music.bitchord.wear.WearProtocol as P
 
 /**
- * Settings → "Podium Air for Wear OS": which watches have BitChord, whether it is
+ * Settings → "BitChord for Wear OS": which watches have BitChord, whether it is
  * this phone's build, and putting it there without a computer.
  *
  * The phone APK carries the watch APK of the same flavor and signing key
@@ -396,7 +396,7 @@ object WatchInstaller {
                 cert = certFile.inputStream().use { CertificateFactory.getInstance("X.509").generateCertificate(it) }
             } else {
                 val pair = KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
-                val name = X500Name("CN=Podium Air")
+                val name = X500Name("CN=BitChord")
                 val now = System.currentTimeMillis()
                 val holder = JcaX509v3CertificateBuilder(
                     name,
@@ -415,6 +415,6 @@ object WatchInstaller {
 
         override fun getPrivateKey(): PrivateKey = key
         override fun getCertificate(): Certificate = cert
-        override fun getDeviceName(): String = "Podium Air"
+        override fun getDeviceName(): String = "BitChord"
     }
 }

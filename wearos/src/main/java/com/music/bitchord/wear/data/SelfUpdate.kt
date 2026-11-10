@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 import com.music.bitchord.wear.WearProtocol as P
 
 /**
- * What the phone's "Podium Air for Wear OS" settings need from this side: which
+ * What the phone's "BitChord for Wear OS" settings need from this side: which
  * build is installed, and a way to put a newer one on without a computer.
  *
  * The phone carries the watch APK built alongside it and sends it over a

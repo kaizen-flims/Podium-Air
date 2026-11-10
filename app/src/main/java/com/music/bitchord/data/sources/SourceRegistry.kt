@@ -122,7 +122,7 @@ data class SourceConfig(
  */
 object SourceRegistry {
 
-    private const val TAG = "Podium Air"
+    private const val TAG = "BitChord"
 
     private lateinit var prefs: SharedPreferences
 

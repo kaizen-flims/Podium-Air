@@ -103,7 +103,7 @@ class AddonClient(rawBaseUrl: String, private val pickedQuality: String? = null)
             }
             if (!manifest.isPlayable) {
                 val declared = manifest.resources.joinToString(", ")
-                throw AddonException("This addon declares $declared — Podium Air needs search")
+                throw AddonException("This addon declares $declared — BitChord needs search")
             }
             if (manifest.requiresBitChordAuth) authRequired = true
             manifest
@@ -380,7 +380,7 @@ class AddonClient(rawBaseUrl: String, private val pickedQuality: String? = null)
             val wait = client.newCall(request).execute().use { response ->
                 val authChallenge = response.takeIf { it.code == 401 }
                     ?.header("WWW-Authenticate")
-                    ?.takeIf { it.trimStart().startsWith("Podium Air", ignoreCase = true) }
+                    ?.takeIf { it.trimStart().startsWith("BitChord", ignoreCase = true) }
                 when {
                     response.isSuccessful ->
                         return@withContext response.body?.string()?.takeIf { it.isNotBlank() }
@@ -406,7 +406,7 @@ class AddonClient(rawBaseUrl: String, private val pickedQuality: String? = null)
                     // sends people to re-paste a URL that was always correct.
                     response.code >= 500 -> throw AddonUnavailable("HTTP ${response.code}")
                     response.code != 429 -> throw AddonException("HTTP ${response.code}")
-                    attempt >= MAX_RETRIES -> throw AddonUnavailable("This addon is rate limiting Podium Air")
+                    attempt >= MAX_RETRIES -> throw AddonUnavailable("This addon is rate limiting BitChord")
                     else -> retryAfterMs(response.header("Retry-After"), attempt)
                 }
             }
@@ -429,7 +429,7 @@ class AddonClient(rawBaseUrl: String, private val pickedQuality: String? = null)
         val parsed = url.toHttpUrlOrNull() ?: throw AddonException("Invalid addon URL")
         val loopback = parsed.host == "localhost" || parsed.host == "127.0.0.1" || parsed.host == "::1"
         if (!parsed.isHttps && !loopback) {
-            throw AddonException("This addon asks for Podium Air verification but isn't using HTTPS")
+            throw AddonException("This addon asks for BitChord verification but isn't using HTTPS")
         }
         return AddonAuth.headersFor(parsed.host, rejectedToken)
     }
@@ -485,7 +485,7 @@ class AddonClient(rawBaseUrl: String, private val pickedQuality: String? = null)
     private fun keyOf(vararg parts: String) = parts.joinToString("|") { "${it.length}:$it" }
 
     companion object {
-        private const val TAG = "Podium Air"
+        private const val TAG = "BitChord"
 
         /** The tiers [AddonSource][com.music.bitchord.data.sources.AddonSource] asks in. */
         const val TIER_LOSSLESS = "LOSSLESS"

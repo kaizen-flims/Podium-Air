@@ -100,7 +100,7 @@ android {
         // Which release assets are this app's: the phone and TV APKs ship in
         // the same GitHub release, told apart by file name. See
         // AppUpdateChecker.apkAssetUrl.
-        buildConfigField("String", "UPDATE_APK_PREFIX", "\"Podium Air-\"")
+        buildConfigField("String", "UPDATE_APK_PREFIX", "\"BitChord-\"")
     }
 
     splits {
@@ -133,7 +133,7 @@ android {
         create("dev") {
             dimension = "env"
             applicationId = "com.dev.bitchord"
-            resValue("string", "app_name", "Podium Air Dev")
+            resValue("string", "app_name", "BitChord Dev")
         }
         create("prod") {
             dimension = "env"
@@ -448,7 +448,7 @@ dependencies {
     // Opens the watch app after an update, so its install prompt is on screen.
     implementation("androidx.wear:wear-remote-interactions:1.1.0")
 
-    // ---- "Podium Air for Wear OS": the first install onto a watch ----
+    // ---- "BitChord for Wear OS": the first install onto a watch ----
     // Without the Play Store only ADB can install on a watch, so this phone is
     // the ADB client, over the watch's Wireless debugging — see WatchInstaller.
     // GPL-3.0/Apache-2.0 dual-licensed. Its own BouncyCastle (jdk15to18) is the
@@ -506,7 +506,7 @@ val verifyDevInstall = tasks.register("verifyDevInstall") {
 tasks.matching { it.name == "installDevDebug" }.configureEach { finalizedBy(verifyDevInstall) }
 
 /*
- * The watch app rides inside the phone app, so "Podium Air for Wear OS" in
+ * The watch app rides inside the phone app, so "BitChord for Wear OS" in
  * Settings can put it on a watch — or update it — with no computer involved.
  *
  * Each phone variant carries the watch build of the same flavor *and* build

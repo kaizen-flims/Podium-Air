@@ -215,7 +215,7 @@ object OfflinePlaylists {
                 )
             }
         }.getOrElse {
-            DebugLog.w("Podium Air", "Offline playlists unreadable: ${it.message}")
+            DebugLog.w("BitChord", "Offline playlists unreadable: ${it.message}")
             emptyList()
         }
     }
@@ -234,7 +234,7 @@ object OfflinePlaylists {
                 )
             }
             prefs.edit().putString(KEY_PLAYLISTS, array.toString()).apply()
-        }.onFailure { DebugLog.w("Podium Air", "Offline playlists not saved: ${it.message}") }
+        }.onFailure { DebugLog.w("BitChord", "Offline playlists not saved: ${it.message}") }
     }
 
     private fun Song.toJson(): JSONObject = JSONObject().apply {

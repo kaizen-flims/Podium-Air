@@ -56,7 +56,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object DirectSourceGate {
 
-    private const val TAG = "Podium Air"
+    private const val TAG = "BitChord"
 
     /** How far ahead of a transition the next track may be resolved and read ahead. */
     const val WINDOW_MS = 25_000L

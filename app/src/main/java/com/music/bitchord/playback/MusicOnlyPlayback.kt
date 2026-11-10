@@ -39,7 +39,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  */
 object MusicOnlyPlayback {
 
-    private const val TAG = "Podium Air"
+    private const val TAG = "BitChord"
 
     /** How long a row waits for its audio version before playing the video's own audio. */
     const val ANSWER_TIMEOUT_MS = 15_000L
