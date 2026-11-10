@@ -3,7 +3,6 @@
 .vscode/
 /build/
 /app/build/
-/desktopApp/bin/
 build/
 gradle-app.setting
 !gradle-wrapper.jar
@@ -45,5 +44,9 @@ keystore.properties
 AGENTS.md
 /output/
 
-# Python verification helpers
-__pycache__/
+# Built packages — release APKs/bundles are handed out, never committed
+*.apk
+*.aab
+
+# Claude Code session files (launch configs, worktrees)
+.claude/

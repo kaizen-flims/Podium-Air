@@ -49,7 +49,7 @@ val lastfmSecret: String = (
 val listenTogetherServer: String = (
     localProps.getProperty("LISTEN_TOGETHER_SERVER")
         ?: System.getenv("LISTEN_TOGETHER_SERVER")
-        ?: ""
+        ?: "https://bitchord-listen-together.onrender.com"
     ).trim().trimEnd('/')
 
 /*
@@ -77,13 +77,13 @@ android {
     defaultConfig {
         // Its own id, so the TV app is a separate install from the phone app
         // rather than an upgrade over it (or under it).
-        applicationId = "com.podium.air.tv"
+        applicationId = "com.music.bitchord.tv"
         // 26 keeps reach wide; real-time blur (RenderEffect) kicks in on API 31+,
         // Haze falls back to a translucent scrim below that.
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0-tv-audit1"
+        versionCode = 39
+        versionName = "1.9.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -95,11 +95,14 @@ android {
             "LISTEN_TOGETHER_SERVER",
             "\"${listenTogetherServer.replace("\\", "\\\\").replace("\"", "\\\"")}\"",
         )
+        // TV has no addons; AddonAuth only reaches the compiler through the
+        // shared phone sources, so it gets no server.
+        buildConfigField("String", "ADDON_AUTH_URL", "\"\"")
         // The TV APKs share a GitHub release with the phone ones and are told
         // apart by name (BitChordTV-v1.8.apk, BitChordTV-v1.8_x86_64.apk), so
         // the updater installs the TV app here, never the phone app. See
         // AppUpdateChecker.apkAssetUrl.
-        buildConfigField("String", "UPDATE_APK_PREFIX", "\"Podium-Air-TV-\"")
+        buildConfigField("String", "UPDATE_APK_PREFIX", "\"BitChordTV-\"")
     }
 
     splits {
@@ -123,19 +126,19 @@ android {
      */
     sourceSets {
         getByName("main") {
-            java.srcDir("runtime/app/src/main/java")
-            res.srcDir("runtime/app/src/main/res")
-            assets.srcDir("runtime/app/src/main/assets")
-            jniLibs.srcDir("runtime/app/src/main/jniLibs")
+            java.srcDir("../app/src/main/java")
+            res.srcDir("../app/src/main/res")
+            assets.srcDir("../app/src/main/assets")
+            jniLibs.srcDir("../app/src/main/jniLibs")
         }
-        getByName("debug") { java.srcDir("runtime/app/src/debug/java") }
+        getByName("debug") { java.srcDir("../app/src/debug/java") }
         // Created later by the "dev" flavor below, so picked up when it appears.
         configureEach { if (name == "dev") manifest.srcFile("src/dev/AndroidManifest.xml") }
     }
 
     externalNativeBuild {
         cmake {
-            path = file("runtime/app/src/main/cpp/CMakeLists.txt")
+            path = file("../app/src/main/cpp/CMakeLists.txt")
             version = "3.22.1"
         }
     }
@@ -147,12 +150,12 @@ android {
     productFlavors {
         create("dev") {
             dimension = "env"
-            applicationId = "com.podium.air.tv.audit"
-            resValue("string", "app_name", "Podium Air TV Audit")
+            applicationId = "com.dev.bitchord.tv"
+            resValue("string", "app_name", "Podium Air TV")
         }
         create("prod") {
             dimension = "env"
-            resValue("string", "app_name", "Podium Air TV Audit")
+            resValue("string", "app_name", "Podium Air TV")
         }
     }
 
@@ -200,11 +203,11 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "runtime/app/proguard-rules.pro"
+                "../app/proguard-rules.pro"
             )
             // Null without a keystore to sign with: fallback to debug signing
             // so the release build is fully R8 optimized and directly installable.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
         /*
          * The release build, installable next to the dev and prod apps: same R8,
@@ -289,8 +292,8 @@ val newPipeExtractorStripped = tasks.register<org.gradle.api.tasks.bundling.Jar>
 }
 
 dependencies {
-    implementation(project(":tvShared"))
-    implementation(project(":tvSharedUi"))
+    implementation(project(":shared"))
+    implementation(project(":sharedUi"))
 
     // ---- Compose (Material 3) ----
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
@@ -313,6 +316,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     // ProcessLifecycleOwner: whether the app is on screen, for the open-app count.
     implementation("androidx.lifecycle:lifecycle-process:2.8.7")
+    // The scheduled check behind "Keep playlists updated"; see PlaylistSync.
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -354,6 +359,12 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
     // The shared app sources register SvgDecoder (artist signatures).
     implementation("io.coil-kt.coil3:coil-svg:3.0.4")
+    // SF Symbols as Compose vectors: the shared app sources draw their menus and
+    // settings with them. Without its own dependencies, for the reason given in
+    // app/build.gradle.kts.
+    implementation("com.github.cosmictaserdev-creator.Jetpack_SF_Symbols:sfsymbols-android:1.1.1") {
+        isTransitive = false
+    }
     implementation("androidx.palette:palette-ktx:1.0.0")
 
     // ---- Frosted glass / progressive blur (Telegram-style bars) ----
@@ -484,7 +495,7 @@ tasks.matching { it.name == "installDevDebug" }.configureEach { finalizedBy(veri
  * Drop the phone-app Kotlin file wherever tv/src/main/java carries one at the
  * same path, so the two never both reach the compiler as the same class.
  */
-val phoneJava = file("runtime/app/src/main/java")
+val phoneJava = file("../app/src/main/java")
 val tvJava = file("src/main/java")
 val replacedByTv: Set<String> = fileTree(tvJava) { include("**/*.kt") }.files
     .map { it.relativeTo(tvJava).invariantSeparatorsPath }

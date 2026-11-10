@@ -81,6 +81,15 @@ private const val SURFACE_OPACITY = 0.4f
 private const val GLASS_RESOLUTION_SCALE = 0.33f
 
 /**
+ * The blur and resolution under [AppSettings.glassPerformance]. With no lens to
+ * bend what is behind it, the frost alone has to break up a page's text, so it
+ * is twice the radius — and that wider blur hides a smaller recording, which
+ * takes the surface from about 11% of its pixels to about 6%.
+ */
+private const val FROST_BLUR_RADIUS_DP = 16f
+private const val FROST_RESOLUTION_SCALE = 0.25f
+
+/**
  * The hairline along a bar's edge, and what stands in for the glass rim
  * wherever the glass itself is not drawn.
  *
@@ -107,9 +116,9 @@ fun glassContentColor(): Color =
  * Selected-tab indicator colour for a glass surface: white in both themes.
  *
  * In light theme that is the inverse of [glassContentColor], a bright lift
- * behind a dark glyph. In dark theme it is a lighter step of the bar's own
- * white-tinted glass (see [glassBarTint]) rather than a black scrim pressed
- * into it — the selected tab is raised out of the bar, as on iOS, not sunk.
+ * behind a dark glyph. In dark theme it is a faint white lift over the bar's
+ * dark glass rather than a black scrim pressed into it — the selected tab is
+ * raised out of the bar, as on iOS, not sunk.
  */
 @Composable
 fun glassIndicatorColor(): Color =
@@ -118,21 +127,6 @@ fun glassIndicatorColor(): Color =
     } else {
         Color.White.copy(alpha = DARK_INDICATOR_OPACITY)
     }
-
-/**
- * The surface tint the navigation bar's glass is drawn with.
- *
- * In dark theme the default near-black tint makes the bar a darker hole in a
- * dark page, with nothing to say where its edge is. A faint white instead
- * gives it the frosted grey of iOS's bar, which reads as glass over black.
- * Light theme keeps the default.
- */
-@Composable
-fun glassBarTint(): Color? =
-    if (MaterialTheme.colorScheme.surface.luminance() > 0.5f) null else Color.White.copy(alpha = DARK_BAR_OPACITY)
-
-/** How white the nav bar's glass is in dark theme — see [glassBarTint]. */
-private const val DARK_BAR_OPACITY = 0.09f
 
 /** The selected tab's pill in dark theme, a step whiter than the bar. */
 private const val DARK_INDICATOR_OPACITY = 0.14f
@@ -210,6 +204,10 @@ fun Modifier.liquidGlassRim(shape: CornerBasedShape): Modifier {
  * recording the backdrop layer when it is on, and a surface that still tried to
  * sample would be sampling a layer nothing is drawing into.
  *
+ * Under [AppSettings.glassPerformance] the lens goes and the blur frosts instead,
+ * for phones that can't spare the refraction shader. The vibrancy, tint, rim and
+ * shadow are the same either way.
+ *
  * [shape] is restricted to [CornerBasedShape] because the backdrop's lens effect
  * throws for any other shape type.
  */
@@ -225,12 +223,15 @@ fun Modifier.liquidGlass(
         return background(MaterialTheme.colorScheme.surface, shape)
             .border(GLASS_EDGE_WIDTH, GLASS_EDGE_COLOR, shape)
     }
+    val glassPerformance by AppSettings.glassPerformance.collectAsStateWithLifecycle()
     val backdrop = LocalAppBackdrop.current
     val exportedBackdrop = LocalGlassExport.current
     val density = LocalDensity.current
-    val blurPx = with(density) { BLUR_RADIUS_DP.dp.toPx() } * GLASS_RESOLUTION_SCALE
-    val lensHeightPx = with(density) { (LENS_HEIGHT * LENS_MAX_DP).dp.toPx() } * GLASS_RESOLUTION_SCALE
-    val lensAmountPx = with(density) { (LENS_AMOUNT * LENS_MAX_DP).dp.toPx() } * GLASS_RESOLUTION_SCALE
+    val resolutionScale = if (glassPerformance) FROST_RESOLUTION_SCALE else GLASS_RESOLUTION_SCALE
+    val blurRadiusDp = if (glassPerformance) FROST_BLUR_RADIUS_DP else BLUR_RADIUS_DP
+    val blurPx = with(density) { blurRadiusDp.dp.toPx() } * resolutionScale
+    val lensHeightPx = with(density) { (LENS_HEIGHT * LENS_MAX_DP).dp.toPx() } * resolutionScale
+    val lensAmountPx = with(density) { (LENS_AMOUNT * LENS_MAX_DP).dp.toPx() } * resolutionScale
     val themeTint = if (MaterialTheme.colorScheme.surface.luminance() > 0.5f) {
         Color(0xFFFAFAFA)
     } else {
@@ -244,7 +245,7 @@ fun Modifier.liquidGlass(
         effects = {
             colorControls(saturation = 1f + 0.5f * VIBRANCY)
             blur(blurPx)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!glassPerformance && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 lens(
                     refractionHeight = lensHeightPx,
                     refractionAmount = lensAmountPx,
@@ -259,6 +260,6 @@ fun Modifier.liquidGlass(
             drawRect(color = surfaceTintColor, size = size)
         },
         exportedBackdrop = exportedBackdrop,
-        backdropScale = GLASS_RESOLUTION_SCALE,
+        backdropScale = resolutionScale,
     )
 }

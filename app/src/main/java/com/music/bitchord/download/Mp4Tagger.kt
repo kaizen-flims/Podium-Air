@@ -233,7 +233,7 @@ object Mp4Tagger {
     }
 
     /** The reverse-DNS owner of [freeformItem], which is what keeps the name ours. */
-    private const val MEAN = "com.podium.air"
+    private const val MEAN = "com.music.bitchord"
 
 
     /** A minimal handler box declaring this `meta` as iTunes-style metadata. */

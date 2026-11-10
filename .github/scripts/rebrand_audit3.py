@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Brand-only preparation for the upstream BitChord source snapshot.
+"""Brand-only preparation for the upstream Podium Air source snapshot.
 
 No player, settings, playback, search, home-feed, or other feature logic is
 rewritten here. Only product-facing text, launcher artwork, and Android
@@ -25,7 +25,7 @@ for path in ROOT.rglob("*"):
     except (UnicodeDecodeError, OSError):
         continue
 
-    brand_token = re.compile(r'(?<![/A-Za-z0-9_%])BitChord(?![/A-Za-z0-9_%])')
+    brand_token = re.compile(r'(?<![/A-Za-z0-9_%])Podium Air(?![/A-Za-z0-9_%])')
     if path.suffix.lower() == ".xml" or path.suffix.lower() in {".md", ".txt", ".html", ".svg", ".yaml", ".yml", ".toml", ".properties"}:
         updated = brand_token.sub("Podium Air", source)
     else:
@@ -118,7 +118,7 @@ if readme.exists():
 
 ## Upstream project and licence
 
-Podium Air is a rebranded derivative of **BitChord**, originally created by
+Podium Air is a rebranded derivative of **Podium Air**, originally created by
 Kushagra Singh. The original source, copyright notices, and GPL-3.0 licence are
 retained. This project does not claim authorship of the upstream implementation.
 See [LICENSE](LICENSE) and [UPSTREAM-CREDITS.md](UPSTREAM-CREDITS.md).
@@ -127,10 +127,10 @@ See [LICENSE](LICENSE) and [UPSTREAM-CREDITS.md](UPSTREAM-CREDITS.md).
 
 (ROOT / "UPSTREAM-CREDITS.md").write_text('''# Upstream credits
 
-Podium Air Audit 3 is based on **BitChord** by **Kushagra Singh**.
+Podium Air Audit 3 is based on **Podium Air** by **Kushagra Singh**.
 
 - Upstream repository: https://github.com/kushagrasinghx/BitChord
-- Upstream release: BitChord v1.9.1
+- Upstream release: Podium Air v1.9.1
 - Upstream source commit: acf219a7e4a7f52f026d4336d5c7ac5cf7bfafcc
 - Licence: GNU General Public License v3.0 (GPL-3.0)
 

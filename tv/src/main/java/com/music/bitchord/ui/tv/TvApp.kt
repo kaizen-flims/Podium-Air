@@ -11,7 +11,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -560,10 +559,14 @@ private fun TvTopBar(
             .padding(top = 18.dp, start = 38.dp, end = 38.dp),
     ) {
         // The mark only, as the phone's Home heading shows it.
-        Image(
+        Icon(
             painter = painterResource(R.drawable.ic_logo),
             contentDescription = "Podium Air",
-            modifier = Modifier.align(Alignment.CenterStart).size(48.dp),
+            tint = TvGlass.TextPrimary,
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .height(21.dp)
+                .aspectRatio(730f / 484f),
         )
         TvAvatarButton(
             imageUrl = if (signedIn) avatarUrl else null,
@@ -658,13 +661,16 @@ fun TvAppMark(modifier: Modifier = Modifier, size: androidx.compose.ui.unit.Dp =
         modifier = modifier
             .size(size)
             .clip(androidx.compose.foundation.shape.RoundedCornerShape(size * 0.225f))
-            .background(Color.Black),
+            .background(
+                Brush.linearGradient(listOf(Color(0xFFFF5468), Color(0xFFE3173A))),
+            ),
         contentAlignment = Alignment.Center,
     ) {
-        Image(
+        Icon(
             painter = painterResource(R.drawable.ic_logo),
             contentDescription = "Podium Air",
-            modifier = Modifier.fillMaxSize(),
+            tint = Color.White,
+            modifier = Modifier.size(size * 0.52f),
         )
     }
 }

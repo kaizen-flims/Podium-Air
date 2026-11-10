@@ -15,10 +15,9 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PodiumAir"
+rootProject.name = "Podium Air"
 include(":shared")
 include(":sharedUi")
-include(":desktopApp")
 
 // The Android module only when there is an SDK to build it against. A machine
 // set up for the desktop alone has none, and including it there fails at
@@ -36,11 +35,8 @@ val androidSdk: String? = file("local.properties")
 
 if (androidSdk != null && file(androidSdk).isDirectory) {
     include(":app")
-    if (providers.gradleProperty("podiumTv").orNull == "true") {
-        include(":tv", ":tvShared", ":tvSharedUi")
-        project(":tvShared").projectDir = file("tv/runtime/shared")
-        project(":tvSharedUi").projectDir = file("tv/runtime/sharedUi")
-    }
+    include(":tv")
+    include(":wearos")
 } else {
     logger.lifecycle("No Android SDK found — building the desktop targets only.")
 }

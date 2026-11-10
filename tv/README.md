@@ -1,21 +1,24 @@
-# Podium Air TV audit
+# Podium Air TV
 
-Experimental Android TV / Google TV port. Android 8+; ARMv7, ARM64 and x86_64.
-This is not a Samsung Tizen, LG webOS, Roku or Apple TV application.
+Android TV / Google TV build of Podium Air: a remote-first Compose-for-TV interface
+(home, library, search, settings, a full-screen now-playing view with synced
+lyrics, display refresh-rate switching, spatial audio, and QR-code sign-in).
 
-Build: `bash gradlew -PpodiumTv=true :tv:testDevReleaseUnitTest :tv:assembleDevRelease` with Android SDK 37 and JDK 21.
-Install the universal APK. The audit package is `com.podium.air.tv.audit`, version
-`0.1.0-tv-audit1`. It installs beside the phone app and is a non-debuggable,
-R8-optimized release signed with a development identity, never the production key.
+This module holds only what differs from the phone app. Everything else — the
+data and playback layers, resources, native code — is built straight from
+[`app/`](../app), together with the shared `:shared` and `:sharedUi` modules.
 
-TV screens are under `src/`. `runtime/` is a pinned copy of the upstream Android,
-shared, sharedUi and native support code required by those screens. It is isolated
-from Podium Air's existing phone and desktop modules; this avoids an unrelated
-upgrade of those apps while auditing TV. Root projects `:tvShared` and `:tvSharedUi`
-point here. Future updates must review and refresh the snapshot deliberately.
+| Path | What it is |
+| --- | --- |
+| `src/main/java/.../ui/tv/**`, `TvActivity.kt` | The TV interface |
+| `src/main/java/...` (same path as a file under `app/`) | A phone-app class TV patches; it replaces the `app/` one at build time |
+| `src/main/res` | TV-only resources: banner, fonts, TV theme |
+| `src/main/AndroidManifest.xml` | TV's own manifest (`LEANBACK_LAUNCHER`, `TvActivity`) |
 
-Upstream: kushagrasinghx/BitChord, commit edc1e6f36febf71a118e649411d2fc21b70ead45.
-Original TV work credited to Nithyanantha; upstream creator Kushagra Singh. GPL-3.0,
-with upstream notices retained. Podium Air adaptation by Prem.
+## Build
 
-See [AUDIT.md](AUDIT.md) for reviewed behavior, changes and remaining runtime checks.
+```bash
+./gradlew :tv:assembleProdDebug
+```
+
+The module is only included when an Android SDK is available, like `:app`.

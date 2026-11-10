@@ -1034,7 +1034,7 @@ private fun TvPhoneSignIn(viewModel: MainViewModel, onBack: () -> Unit) {
         scope.launch {
             TvAuthServer.start { cookie ->
                 scope.launch(Dispatchers.Main) { viewModel.onSignedIn(cookie) }
-            }?.let { (port, ip) -> url = TvAuthServer.pairingUrl(ip, port) }
+            }?.let { (port, ip) -> url = "http://$ip:$port/" }
         }
         onDispose { TvAuthServer.stop() }
     }
@@ -1057,7 +1057,7 @@ private fun TvPhoneSignIn(viewModel: MainViewModel, onBack: () -> Unit) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(11.dp)) {
                 TvStep(1, "Connect your phone to the same Wi-Fi as this TV.")
                 TvStep(2, "Scan the code, or open ${url ?: "the address shown here"}.")
-                TvStep(3, "Use trusted Wi-Fi only: this experimental pairing page transfers your session over local HTTP.")
+                TvStep(3, "Follow the steps on your phone. This TV signs in by itself.")
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -1213,8 +1213,8 @@ fun TvAboutDialog(onDismiss: () -> Unit) {
     TvDialog(title = "Podium Air", message = "Version ${BuildConfig.VERSION_NAME}", onDismissRequest = onDismiss) {
         TvAppMark(size = 77.dp, modifier = Modifier.padding(bottom = 21.dp))
         Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            TvListRow(title = "Made with love by Prem", value = "Podium Air", enabled = false, onClick = {})
-            TvListRow(title = "Upstream BitChord · Kushagra Singh / Nithyanantha", value = "Credits", enabled = false, onClick = {})
+            TvListRow(title = "Kushagra Singh", value = "Creator", enabled = false, onClick = {})
+            TvListRow(title = "Nithyanantha", value = "TV App", enabled = false, onClick = {})
         }
         Spacer(modifier = Modifier.height(14.dp))
         Text(

@@ -307,7 +307,7 @@ internal suspend fun saveToGallery(
     context: Context,
     bitmap: Bitmap,
     label: String,
-    prefix: String = "podium-air-replay",
+    prefix: String = "bitchord-replay",
 ): Boolean = withContext(Dispatchers.IO) {
     val name = "$prefix-${label.replace(' ', '-').lowercase(Locale.ROOT)}.png"
     runCatching {
@@ -317,7 +317,7 @@ internal suspend fun saveToGallery(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(
                     MediaStore.Images.Media.RELATIVE_PATH,
-                    "${Environment.DIRECTORY_PICTURES}/Podium Air",
+                    "${Environment.DIRECTORY_PICTURES}/BitChord",
                 )
             }
         }

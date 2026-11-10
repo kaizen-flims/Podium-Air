@@ -37,9 +37,6 @@ object TvAuthServer {
     private const val DEFAULT_PORT = 8765
 
     private var serverSocket: ServerSocket? = null
-    @Volatile private var pairingToken = ""
-
-    fun pairingUrl(ip: String, port: Int): String = "http://$ip:$port/?token=$pairingToken"
     private val isRunning = AtomicBoolean(false)
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -85,7 +82,6 @@ object TvAuthServer {
 
         val ip = getLocalIpAddress() ?: return@withContext null
         try {
-            pairingToken = java.util.UUID.randomUUID().toString() + java.util.UUID.randomUUID().toString()
             val socket = try {
                 ServerSocket(DEFAULT_PORT)
             } catch (_: Exception) {
@@ -119,13 +115,11 @@ object TvAuthServer {
             serverSocket?.close()
         } catch (_: Exception) {}
         serverSocket = null
-        pairingToken = ""
     }
 
     private fun handleClient(client: Socket, onCookieReceived: ((String) -> Unit)?) {
         Thread {
             try {
-                client.soTimeout = 10_000
                 val reader = BufferedReader(InputStreamReader(client.getInputStream()))
                 val writer = PrintWriter(client.getOutputStream(), true)
 
@@ -137,31 +131,14 @@ object TvAuthServer {
                 val query = if (rawPath.contains("?")) rawPath.substringAfter("?") else ""
 
                 var contentLength = 0
-                var cookieHeader = ""
-                var originHeader: String? = null
-                var hostHeader = ""
-                var headerBytes = 0
                 var line: String?
                 while (reader.readLine().also { line = it } != null) {
                     if (line.isNullOrBlank()) break
-                    headerBytes += line!!.length
-                    require(headerBytes <= 16_384)
-                    if (line!!.startsWith("Cookie:", true)) cookieHeader = line!!.substringAfter(":").trim()
-                    if (line!!.startsWith("Origin:", true)) originHeader = line!!.substringAfter(":").trim()
-                    if (line!!.startsWith("Host:", true)) hostHeader = line!!.substringAfter(":").trim()
                     if (line!!.startsWith("Content-Length:", ignoreCase = true)) {
                         contentLength = line!!.substringAfter(":").trim().toIntOrNull() ?: 0
                     }
                 }
 
-                val suppliedToken = parseQueryParam(query, "token") ?: cookieHeader.split(";")
-                    .map { it.trim() }.firstOrNull { it.startsWith("podium_pair=") }?.substringAfter("=")
-                if (pairingToken.isBlank() || suppliedToken != pairingToken ||
-                    (originHeader != null && originHeader != "http://$hostHeader") || contentLength !in 0..16_384) {
-                    writer.print("HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
-                    writer.flush()
-                    return@Thread
-                }
                 var requestBody = ""
                 if (contentLength > 0) {
                     val bodyChars = CharArray(contentLength)
@@ -190,7 +167,7 @@ object TvAuthServer {
                     }
 
                     // 2. API: Control Playback Actions
-                    path == "/api/action" && method == "POST" -> {
+                    path == "/api/action" -> {
                         val action = if (method == "POST") {
                             parseFormParam(requestBody, "action") ?: parseQueryParam(query, "action")
                         } else {
@@ -218,7 +195,7 @@ object TvAuthServer {
                         if (q.isBlank()) {
                             sendJsonResponse(writer, "[]")
                         } else {
-                            kotlinx.coroutines.runBlocking {
+                            scope.launch {
                                 val results = YtMusicRepository.search(q, SearchFilter.SONGS).getOrDefault(emptyList())
                                 val arr = JSONArray()
                                 results.take(15).forEach { item ->
@@ -239,7 +216,7 @@ object TvAuthServer {
                     }
 
                     // 4. API: Play Song from Phone Search
-                    path == "/api/play" && method == "POST" -> {
+                    path == "/api/play" -> {
                         val videoId = parseFormParam(requestBody, "videoId") ?: parseQueryParam(query, "videoId")
                         val title = parseFormParam(requestBody, "title") ?: parseQueryParam(query, "title") ?: "Track"
                         val artist = parseFormParam(requestBody, "artist") ?: parseQueryParam(query, "artist") ?: ""
@@ -281,15 +258,10 @@ object TvAuthServer {
         }.start()
     }
 
-    private fun writePairingHeaders(writer: PrintWriter) {
-        writer.print("Set-Cookie: podium_pair=$pairingToken; Path=/; HttpOnly; SameSite=Strict\r\n")
-        writer.print("Cache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\n")
-    }
-
     private fun sendJsonResponse(writer: PrintWriter, json: String) {
         writer.print("HTTP/1.1 200 OK\r\n")
         writer.print("Content-Type: application/json; charset=utf-8\r\n")
-        writePairingHeaders(writer)
+        writer.print("Access-Control-Allow-Origin: *\r\n")
         writer.print("Content-Length: ${json.toByteArray().size}\r\n")
         writer.print("\r\n")
         writer.print(json)
@@ -299,7 +271,6 @@ object TvAuthServer {
     private fun sendHtmlResponse(writer: PrintWriter, html: String) {
         writer.print("HTTP/1.1 200 OK\r\n")
         writer.print("Content-Type: text/html; charset=utf-8\r\n")
-        writePairingHeaders(writer)
         writer.print("Content-Length: ${html.toByteArray().size}\r\n")
         writer.print("\r\n")
         writer.print(html)
@@ -527,7 +498,7 @@ textarea { width: 100%; height: 90px; background: rgba(0,0,0,0.5); border: 1px s
     </ol>
   </div>
 
-  <a href="https://music.youtube.com" target="_blank" rel="noreferrer noopener" class="btn-google">
+  <a href="https://music.youtube.com" target="_blank" class="btn-google">
     <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
     Open YouTube Music on Phone
   </a>

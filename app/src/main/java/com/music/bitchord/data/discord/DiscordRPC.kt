@@ -117,11 +117,11 @@ class DiscordRPC(
             // 96dp sleeve in a presence card.
             //
             // A track with no artwork — or with artwork Discord can't reach,
-            // which is anything that isn't an http URL — uses Podium Air's
-            // launcher artwork in its place.
-            largeImage = RpcImage.ExternalImage(
-                song.artworkAt(ART_PX)?.takeIf { it.startsWith("http") } ?: FALLBACK_ART_URL,
-            ),
+            // which is anything that isn't an http URL — sends none, and Discord
+            // draws the BitChord application's own icon in its place.
+            largeImage = song.artworkAt(ART_PX)
+                ?.takeIf { it.startsWith("http") }
+                ?.let(RpcImage::ExternalImage),
             smallImage = null,
             // The card's optional third information line. Kept absent for
             // ordinary lossy streams so Discord only calls attention to a
@@ -149,15 +149,13 @@ class DiscordRPC(
         context.getString(R.string.app_name).removeSuffix(" Dev")
 
     companion object {
-        const val PROJECT_URL = "https://github.com/kaizen-flims/Podium-Air"
+        const val PROJECT_URL = "https://github.com/kushagrasinghx/BitChord"
 
         const val DEFAULT_BUTTON_1 = "Listen on YouTube Music"
         const val DEFAULT_BUTTON_2 = "Visit Podium Air"
 
         /** Discord draws the sleeve at roughly 96dp; 480px covers it on any density. */
         private const val ART_PX = 480
-        private const val FALLBACK_ART_URL =
-            "https://raw.githubusercontent.com/kaizen-flims/Podium-Air/main/app/src/main/ic_launcher-playstore.png"
 
         fun watchUrl(song: Song): String =
             "https://music.youtube.com/watch?v=${song.videoId}"

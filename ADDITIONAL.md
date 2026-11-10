@@ -1,6 +1,6 @@
 # Additional Documentation
 
-Podium Air is maintained and branded by Prem Das (Kaizen / @nottt.premm) and derives from BitChord. Its [official app information](https://podium-air-website.pages.dev/about), [downloads](https://podium-air-website.pages.dev/#download) and [maintainers](MAINTAINERS.md) identify this fork. The inherited BitChord development references below remain for technical context.
+Additional Podium Air project and development information will be maintained here.
 
 ## Project
 - [Listen Together Server Documentation](backend/README.md): Architecture, synchronization protocol, and deployment instructions for the party server.

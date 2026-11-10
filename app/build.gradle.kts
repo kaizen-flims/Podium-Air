@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.security.MessageDigest
 import java.io.FileInputStream
 
 plugins {
@@ -52,8 +53,20 @@ val listenTogetherServer: String = (
         ?: "https://bitchord-listen-together.onrender.com"
     ).trim().trimEnd('/')
 
-// Keep the current production version until the audited update is approved.
-val betaSuffix = ""
+/*
+ * The service that checks this app's hardware key attestation and issues addon
+ * tokens. See AddonAuth. Overridable for a staging deployment. A fork that
+ * points this at its own server gains nothing: addons only trust tokens signed
+ * by the official service's key.
+ */
+val addonAuthServer: String = (
+    localProps.getProperty("ADDON_AUTH_SERVER")
+        ?: System.getenv("ADDON_AUTH_SERVER")
+        ?: "https://bitchord-auth.kushagrasingh.in"
+    ).trim().trimEnd('/')
+
+// See the root build.gradle.kts: one version for the phone and its watch app.
+val betaSuffix = rootProject.extra["bitchordBetaSuffix"] as String
 
 android {
     namespace = "com.music.bitchord"
@@ -61,13 +74,13 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.podium.air"
+        applicationId = "com.music.bitchord"
         // 26 keeps reach wide; real-time blur (RenderEffect) kicks in on API 31+,
         // Haze falls back to a translucent scrim below that.
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = rootProject.extra["bitchordVersionCode"] as Int
+        versionName = rootProject.extra["bitchordVersionName"] as String
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -79,11 +92,15 @@ android {
             "LISTEN_TOGETHER_SERVER",
             "\"${listenTogetherServer.replace("\\", "\\\\").replace("\"", "\\\"")}\"",
         )
+        buildConfigField(
+            "String",
+            "ADDON_AUTH_URL",
+            "\"${addonAuthServer.replace("\\", "\\\\").replace("\"", "\\\"")}\"",
+        )
         // Which release assets are this app's: the phone and TV APKs ship in
         // the same GitHub release, told apart by file name. See
         // AppUpdateChecker.apkAssetUrl.
-        buildConfigField("String", "UPDATE_APK_PREFIX", "\"Podium-Air-\"")
-        buildConfigField("boolean", "IS_AUDIT", "false")
+        buildConfigField("String", "UPDATE_APK_PREFIX", "\"Podium Air-\"")
     }
 
     splits {
@@ -93,6 +110,12 @@ android {
             include("armeabi-v7a", "arm64-v8a", "x86_64")
             isUniversalApk = true
         }
+    }
+
+    // The phone <-> watch protocol, one file shared with the watch app so the
+    // two cannot drift. See wearos/protocol/.../WearProtocol.kt.
+    sourceSets {
+        getByName("main") { java.srcDir("../wearos/protocol") }
     }
 
     externalNativeBuild {
@@ -109,22 +132,20 @@ android {
     productFlavors {
         create("dev") {
             dimension = "env"
-            applicationId = "com.podium.air.dev"
+            applicationId = "com.dev.bitchord"
             resValue("string", "app_name", "Podium Air Dev")
         }
         create("prod") {
             dimension = "env"
-            // Matches defaultConfig — the Podium Air production package.
+            applicationId = "com.podium.air"
         }
     }
 
     signingConfigs {
-        // Pin the same file restored by CI; the SDK's default debug-key location
-        // can vary between runner images and Android environment variables.
-        create("audit") {
-            storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+        create("audit3") {
+            storeFile = file("${System.getProperty("user.home")}/.android/podium-air-audit3.keystore")
             storePassword = "android"
-            keyAlias = "androiddebugkey"
+            keyAlias = "podiumaudit3"
             keyPassword = "android"
         }
         // Both halves have to be there, not just the properties file: it *names*
@@ -146,6 +167,14 @@ android {
     }
 
     buildTypes {
+        create("audit3") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".audit3"
+            versionNameSuffix = "-audit3-v1.9.1"
+            signingConfig = signingConfigs.getByName("audit3")
+            matchingFallbacks += listOf("release")
+            resValue("string", "app_name", "Podium Air Audit 3")
+        }
         debug {
             if (betaSuffix.isNotEmpty()) versionNameSuffix = "-$betaSuffix"
         }
@@ -167,6 +196,7 @@ android {
              * `benchmark` build type below before it ships.
              */
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -183,16 +213,6 @@ android {
          * build is interpreted and verified at runtime and says little about
          * either. `./gradlew installDevBenchmark`.
          */
-        // Release-like audit build: independent package, private data and signing key.
-        create("audit") {
-            initWith(getByName("release"))
-            applicationIdSuffix = ".audit2"
-            versionNameSuffix = "-audit2-v1.8.1-branding4"
-            signingConfig = signingConfigs.getByName("audit")
-            matchingFallbacks += listOf("release")
-            resValue("string", "app_name", "Podium Air Audit 2")
-            buildConfigField("boolean", "IS_AUDIT", "true")
-        }
         create("benchmark") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
@@ -294,6 +314,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     // ProcessLifecycleOwner: whether the app is on screen, for the open-app count.
     implementation("androidx.lifecycle:lifecycle-process:2.8.7")
+    // The scheduled check behind "Keep playlists updated"; see PlaylistSync.
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -331,6 +353,13 @@ dependencies {
     // Title logos are PNG, but artist signatures are usually SVG — without
     // this Coil can't decode them (see ArtistSignatureRepository).
     implementation("io.coil-kt.coil3:coil-svg:3.0.4")
+    // SF Symbols as Compose vectors, for the iOS-style settings and menus (as Convx uses).
+    // Without its own dependencies: it asks for Compose 1.12, which needs a newer Android
+    // Gradle plugin than this build, and the plain ImageVectors used here need nothing
+    // the app's own Compose doesn't already have.
+    implementation("com.github.cosmictaserdev-creator.Jetpack_SF_Symbols:sfsymbols-android:1.1.1") {
+        isTransitive = false
+    }
     implementation("androidx.palette:palette-ktx:1.0.0")
 
     // ---- Frosted glass / progressive blur (Telegram-style bars) ----
@@ -419,7 +448,7 @@ dependencies {
     // Opens the watch app after an update, so its install prompt is on screen.
     implementation("androidx.wear:wear-remote-interactions:1.1.0")
 
-    // ---- "BitChord for Wear OS": the first install onto a watch ----
+    // ---- "Podium Air for Wear OS": the first install onto a watch ----
     // Without the Play Store only ADB can install on a watch, so this phone is
     // the ADB client, over the watch's Wireless debugging — see WatchInstaller.
     // GPL-3.0/Apache-2.0 dual-licensed. Its own BouncyCastle (jdk15to18) is the
@@ -466,12 +495,69 @@ val verifyDevInstall = tasks.register("verifyDevInstall") {
             .drop(1)
             .mapNotNull { line -> line.split('\t').takeIf { it.size == 2 && it[1] == "device" }?.get(0) }
         serials.forEach { serial ->
-            logger.lifecycle("verifyDevInstall: compiling com.podium.air.dev on $serial")
+            logger.lifecycle("verifyDevInstall: compiling com.dev.bitchord on $serial")
             ProcessBuilder(
                 adbPath, "-s", serial, "shell", "cmd", "package", "compile",
-                "-m", "verify", "-f", "com.podium.air.dev",
+                "-m", "verify", "-f", "com.dev.bitchord",
             ).inheritIO().start().waitFor()
         }
     }
 }
 tasks.matching { it.name == "installDevDebug" }.configureEach { finalizedBy(verifyDevInstall) }
+
+/*
+ * The watch app rides inside the phone app, so "Podium Air for Wear OS" in
+ * Settings can put it on a watch — or update it — with no computer involved.
+ *
+ * Each phone variant carries the watch build of the same flavor *and* build
+ * type: the same package (dev with dev, prod with prod) and the same signing
+ * key, which is what the Wearable Data Layer needs before the two will talk at
+ * all. A SHA-256 travels with it, so the phone can tell the watch's build from
+ * the one it carries even when the version numbers match.
+ *
+ * Costs a watch build per phone build; -Pbitchord.bundleWear=false skips it
+ * for a quick local iteration (Settings then offers no install).
+ */
+abstract class BundleWearApk : DefaultTask() {
+    @get:InputFiles
+    abstract val apks: ConfigurableFileCollection
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun bundle() {
+        val out = outputDir.get().asFile.resolve("wear")
+        out.deleteRecursively()
+        out.mkdirs()
+        val apk = apks.asFileTree.matching { include("*.apk") }.files.singleOrNull()
+            ?: throw GradleException("Expected exactly one watch APK in ${apks.files}")
+        val target = out.resolve("BitChordWear.apk")
+        apk.copyTo(target, overwrite = true)
+        val digest = MessageDigest.getInstance("SHA-256")
+        target.inputStream().use { input ->
+            val buffer = ByteArray(64 * 1024)
+            while (true) {
+                val read = input.read(buffer)
+                if (read < 0) break
+                digest.update(buffer, 0, read)
+            }
+        }
+        out.resolve("BitChordWear.sha256").writeText(digest.digest().joinToString("") { "%02x".format(it) })
+    }
+}
+
+if (providers.gradleProperty("bitchord.bundleWear").orNull != "false" && findProject(":wearos") != null) {
+    androidComponents.onVariants { variant ->
+        val flavor = variant.productFlavors.firstOrNull { it.first == "env" }?.second ?: return@onVariants
+        val type = variant.buildType ?: return@onVariants
+        // The benchmark build has no watch counterpart.
+        if (type != "debug" && type != "release") return@onVariants
+        val cap = variant.name.replaceFirstChar { it.uppercase() }
+        val bundle = tasks.register<BundleWearApk>("bundleWearApk$cap") {
+            dependsOn(":wearos:assemble$cap")
+            apks.from(rootProject.layout.projectDirectory.dir("wearos/build/outputs/apk/$flavor/$type"))
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(bundle, BundleWearApk::outputDir)
+    }
+}
