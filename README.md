@@ -3,7 +3,7 @@
 <br/>
 <br/>
 
-<img src="app/src/main/res/drawable-nodpi/podium_air_icon.jpg" alt="Podium Air icon" width="200" />
+<img src="Logo.png" alt="Podium Air icon" width="200" />
 
 # Podium Air
 
